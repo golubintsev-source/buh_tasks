@@ -12,10 +12,40 @@ let editingTaskId = null;
 let clientsList = [];
 let clientsById = new Map();
 
+/** Имя типа задачи (trim) → #rrggbb для фона строки */
+let taskTypeColors = new Map();
+
+/** @param {string | null | undefined} raw */
+function normalizeHexColor(raw) {
+  if (raw == null || typeof raw !== "string") return null;
+  const s = raw.trim();
+  if (!s) return null;
+  if (/^#[0-9A-Fa-f]{6}$/.test(s)) return s.toLowerCase();
+  if (/^#[0-9A-Fa-f]{3}$/.test(s)) {
+    const r = s[1],
+      g = s[2],
+      b = s[3];
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  return null;
+}
+
+function rebuildTaskTypeColors(types) {
+  taskTypeColors = new Map();
+  for (const t of types) {
+    const hex = normalizeHexColor(t.color);
+    if (hex) taskTypeColors.set(String(t.name).trim(), hex);
+  }
+}
+
 async function loadReferenceData() {
   const [cr, tr] = await Promise.all([
     supabase.from("clients").select("id,name,phone,email").order("name"),
-    supabase.from("task_types").select("id,name,sort_order").order("sort_order", { ascending: true }).order("name", { ascending: true }),
+    supabase
+      .from("task_types")
+      .select("id,name,sort_order,color")
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true }),
   ]);
   if (cr.error) {
     setStatus(`Справочник клиентов: ${cr.error.message}`, true);
@@ -28,7 +58,9 @@ async function loadReferenceData() {
     setStatus(`Типы задач: ${tr.error.message}`, true);
     return;
   }
-  populateTaskTypeSelect(tr.data || []);
+  const types = tr.data || [];
+  rebuildTaskTypeColors(types);
+  populateTaskTypeSelect(types);
 }
 
 function populateClientSelect() {
@@ -277,11 +309,22 @@ function trashButton(onClick) {
   return btn;
 }
 
+function rowBackgroundForTaskType(taskTypeRaw) {
+  const name = (taskTypeRaw || "").trim();
+  if (!name) return null;
+  return taskTypeColors.get(name) || null;
+}
+
 function renderTableRows(tbody, rows) {
   tbody.innerHTML = "";
   for (const row of rows) {
     const tr = document.createElement("tr");
     tr.dataset.id = row.id;
+    const rowBg = rowBackgroundForTaskType(row.task_type);
+    if (rowBg) {
+      tr.classList.add("task-row--typed");
+      tr.style.setProperty("--row-type-bg", rowBg);
+    }
 
     const tdNum = document.createElement("td");
     tdNum.className = "cell-num cell-num--edit";

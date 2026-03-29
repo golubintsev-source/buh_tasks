@@ -413,16 +413,24 @@ body {
   border-bottom: none;
 }
 
-.data-table tbody tr:hover td {
+.data-table tbody tr:not(.task-row--typed):hover td {
   background: rgba(37, 99, 235, 0.04);
 }
 
-.task-block--done .data-table tbody tr:hover td {
+.task-block--done .data-table tbody tr:not(.task-row--typed):hover td {
   background: rgba(255, 255, 255, 0.35);
 }
 
-.task-block--overdue .data-table tbody tr:hover td {
+.task-block--overdue .data-table tbody tr:not(.task-row--typed):hover td {
   background: rgba(254, 226, 226, 0.6);
+}
+
+.data-table tbody tr.task-row--typed td {
+  background-color: var(--row-type-bg);
+}
+
+.data-table tbody tr.task-row--typed:hover td {
+  box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.08);
 }
 
 .data-table td.cell-text {
@@ -582,9 +590,39 @@ body {
   max-width: 28rem;
 }
 
+.settings-add-row--types {
+  grid-template-columns: 1fr auto auto;
+  align-items: end;
+  max-width: 38rem;
+}
+
+.field--color .input-color,
+.input-color {
+  display: block;
+  width: 2.75rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--surface);
+  vertical-align: middle;
+}
+
+.cell-color-picker {
+  vertical-align: middle;
+  width: 1%;
+  white-space: nowrap;
+}
+
 @media (max-width: 900px) {
-  .settings-add-row {
+  .settings-add-row:not(.settings-add-row--types) {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .settings-add-row--types {
+    grid-template-columns: 1fr;
+    max-width: none;
   }
 
   .settings-add-row .field--add-btn {

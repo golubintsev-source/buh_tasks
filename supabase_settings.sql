@@ -12,9 +12,12 @@ create table if not exists public.task_types (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   sort_order integer not null default 0,
+  color text,
   created_at timestamptz not null default now(),
   constraint task_types_name_unique unique (name)
 );
+
+alter table public.task_types add column if not exists color text;
 
 insert into public.task_types (name, sort_order)
 select v.name, v.ord
