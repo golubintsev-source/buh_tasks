@@ -20,6 +20,12 @@ function setStatus(text, isError) {
   statusEl.hidden = false;
 }
 
+function hideStatus() {
+  statusEl.textContent = "";
+  statusEl.classList.remove("status--error");
+  statusEl.hidden = true;
+}
+
 function fmtDateTime(iso) {
   if (!iso) return "—";
   const d = new Date(iso);
@@ -213,9 +219,8 @@ async function loadTasks() {
     return;
   }
 
-  const list = data || [];
-  setStatus(`Всего задач: ${list.length}`, false);
-  renderBoard(list);
+  hideStatus();
+  renderBoard(data || []);
 }
 
 async function toggleClosed(id, closed) {

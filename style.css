@@ -39,37 +39,11 @@ body {
   flex-direction: column;
 }
 
-.topbar {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow);
-}
-
-.topbar__inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.25rem 1.5rem;
-}
-
-.topbar__title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--text);
-}
-
-.topbar__subtitle {
-  margin: 0.25rem 0 0;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
 .main {
   flex: 1;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem 1.5rem;
   width: 100%;
 }
 
@@ -100,13 +74,6 @@ body {
 
 .panel--form {
   padding: 1.25rem 1.5rem 1.5rem;
-}
-
-.panel__title {
-  margin: 0 0 1rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text);
 }
 
 .form__grid {

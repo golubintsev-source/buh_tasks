@@ -11,18 +11,10 @@
 </head>
 <body>
   <div class="app">
-    <header class="topbar">
-      <div class="topbar__inner">
-        <h1 class="topbar__title">Бух задачи</h1>
-        <p class="topbar__subtitle">Учёт задач с дедлайнами и клиентами</p>
-      </div>
-    </header>
-
     <main class="main">
-      <div id="status" class="status" role="status" hidden></div>
+      <div id="status" class="status" role="alert" hidden></div>
 
-      <section class="panel panel--form" aria-labelledby="new-task-heading">
-        <h2 id="new-task-heading" class="panel__title">Новая задача</h2>
+      <section class="panel panel--form" aria-label="Новая задача">
         <form id="taskForm" class="form" autocomplete="off">
           <div class="form__grid">
             <label class="field field--full">
