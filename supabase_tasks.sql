@@ -19,6 +19,18 @@ alter table public.tasks add column if not exists email text;
 alter table public.tasks add column if not exists task_type text;
 alter table public.tasks add column if not exists deadline timestamptz;
 alter table public.tasks add column if not exists closed boolean;
+alter table public.tasks add column if not exists title text;
+
+-- Старая схема: title NOT NULL без task_text в INSERT — снимаем жёсткое ограничение
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'tasks' and column_name = 'title'
+  ) then
+    execute 'alter table public.tasks alter column title drop not null';
+  end if;
+end $$;
 
 do $$
 begin

@@ -4,9 +4,6 @@ const boardEl = document.getElementById("taskBoard");
 const formEl = document.getElementById("taskForm");
 const statusEl = document.getElementById("status");
 
-const COLS =
-  "id, created_at, task_text, client_name, phone, email, task_type, deadline, closed";
-
 function isConfigPlaceholder() {
   return (
     SUPABASE_URL.includes("YOUR_PROJECT_REF") ||
@@ -127,7 +124,7 @@ function renderTableRows(tbody, rows) {
 
     const tdCreated = el("td", "cell-nowrap", fmtDateTime(row.created_at));
     const tdText = el("td", "cell-text");
-    tdText.textContent = row.task_text || "—";
+    tdText.textContent = (row.task_text || row.title || "").trim() || "—";
 
     const tdClient = el("td", null, row.client_name || "—");
     const tdPhone = el("td", "cell-nowrap", row.phone || "—");
@@ -241,7 +238,7 @@ function renderBoard(tasks) {
 }
 
 async function loadTasks() {
-  const { data, error } = await supabase.from("tasks").select(COLS);
+  const { data, error } = await supabase.from("tasks").select("*");
 
   if (error) {
     setStatus(`Ошибка загрузки: ${error.message}`, true);
@@ -286,6 +283,7 @@ formEl.addEventListener("submit", async (e) => {
 
   const { error } = await supabase.from("tasks").insert({
     task_text: taskText,
+    title: taskText,
     client_name,
     phone,
     email,
