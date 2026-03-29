@@ -1,16 +1,9 @@
 import { supabase, SUPABASE_URL, SUPABASE_KEY } from "./config.js";
+import { formatPhoneInput } from "./phoneMask.js";
+import { formatTaskNumber } from "./task-utils.js";
 
 const boardEl = document.getElementById("taskBoard");
-const formEl = document.getElementById("taskForm");
 const statusEl = document.getElementById("status");
-const taskTextEl = document.getElementById("taskText");
-const deadlineEl = document.getElementById("deadline");
-
-/** @type {string | null} */
-let editingTaskId = null;
-
-let clientsList = [];
-let clientsById = new Map();
 
 /** Имя типа задачи (trim) → #rrggbb для фона строки */
 let taskTypeColors = new Map();
@@ -39,78 +32,16 @@ function rebuildTaskTypeColors(types) {
 }
 
 async function loadReferenceData() {
-  const [cr, tr] = await Promise.all([
-    supabase.from("clients").select("id,name,phone,email").order("name"),
-    supabase
-      .from("task_types")
-      .select("id,name,sort_order,color")
-      .order("sort_order", { ascending: true })
-      .order("name", { ascending: true }),
-  ]);
-  if (cr.error) {
-    setStatus(`Справочник клиентов: ${cr.error.message}`, true);
-    return;
-  }
-  clientsList = cr.data || [];
-  clientsById = new Map(clientsList.map((c) => [c.id, c]));
-  populateClientSelect();
+  const tr = await supabase
+    .from("task_types")
+    .select("id,name,sort_order,color")
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
   if (tr.error) {
     setStatus(`Типы задач: ${tr.error.message}`, true);
     return;
   }
-  const types = tr.data || [];
-  rebuildTaskTypeColors(types);
-  populateTaskTypeSelect(types);
-}
-
-function populateClientSelect() {
-  const sel = document.getElementById("clientSelect");
-  if (!sel) return;
-  const prev = sel.value;
-  sel.querySelectorAll("option[data-legacy]").forEach((o) => o.remove());
-  sel.innerHTML = "";
-  const empty = document.createElement("option");
-  empty.value = "";
-  empty.textContent = "— выберите клиента —";
-  sel.appendChild(empty);
-  for (const c of clientsList) {
-    const o = document.createElement("option");
-    o.value = c.id;
-    o.textContent = c.name;
-    sel.appendChild(o);
-  }
-  if (prev && [...sel.options].some((o) => o.value === prev)) {
-    sel.value = prev;
-  }
-}
-
-function populateTaskTypeSelect(types) {
-  const sel = document.getElementById("taskType");
-  if (!sel) return;
-  const prev = sel.value;
-  sel.innerHTML = "";
-  const empty = document.createElement("option");
-  empty.value = "";
-  empty.textContent = "—";
-  sel.appendChild(empty);
-  for (const t of types) {
-    const o = document.createElement("option");
-    o.value = t.name;
-    o.textContent = t.name;
-    sel.appendChild(o);
-  }
-  if (prev && [...sel.options].some((o) => o.value === prev)) {
-    sel.value = prev;
-  }
-}
-
-function getClientNameFromForm() {
-  const sel = document.getElementById("clientSelect");
-  const opt = sel?.selectedOptions[0];
-  if (!opt || !opt.value) return null;
-  if (opt.value === "__legacy__") return opt.textContent.trim() || null;
-  const c = clientsById.get(opt.value);
-  return c ? c.name.trim() : null;
+  rebuildTaskTypeColors(tr.data || []);
 }
 
 function isConfigPlaceholder() {
@@ -144,67 +75,6 @@ function fmtDateTime(iso) {
   });
 }
 
-/** Номер задачи в виде 007 (минимум 3 цифры; при >999 длина растёт). */
-function formatTaskNumber(n) {
-  if (n == null || n === "") return "—";
-  const num = Number(n);
-  if (!Number.isFinite(num)) return "—";
-  return String(Math.trunc(num)).padStart(3, "0");
-}
-
-function toDatetimeLocalValue(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function clearEditMode() {
-  editingTaskId = null;
-  document.querySelector("#clientSelect option[data-legacy]")?.remove();
-  const lbl = document.getElementById("taskTextLabel");
-  if (lbl) lbl.textContent = "Текст задачи";
-  const btn = document.getElementById("taskSubmitBtn");
-  if (btn) btn.textContent = "Сохранить";
-}
-
-function startEditTask(row) {
-  editingTaskId = row.id;
-  taskTextEl.closest(".field")?.classList.remove("field--invalid");
-  deadlineEl.closest(".field")?.classList.remove("field--invalid");
-  hideStatus();
-  const lbl = document.getElementById("taskTextLabel");
-  if (lbl) lbl.textContent = `Текст задачи (№ ${formatTaskNumber(row.task_number)})`;
-  taskTextEl.value = (row.task_text || row.title || "").trim();
-  document.querySelector("#clientSelect option[data-legacy]")?.remove();
-  const name = (row.client_name || "").trim();
-  const match = clientsList.find((c) => c.name === name);
-  const clientSel = document.getElementById("clientSelect");
-  if (match) {
-    clientSel.value = match.id;
-    document.getElementById("phone").value = match.phone || row.phone || "";
-    document.getElementById("email").value = match.email || row.email || "";
-  } else if (name) {
-    const o = document.createElement("option");
-    o.value = "__legacy__";
-    o.textContent = name;
-    o.dataset.legacy = "1";
-    clientSel.appendChild(o);
-    clientSel.value = "__legacy__";
-    document.getElementById("phone").value = row.phone || "";
-    document.getElementById("email").value = row.email || "";
-  } else {
-    clientSel.value = "";
-    document.getElementById("phone").value = row.phone || "";
-    document.getElementById("email").value = row.email || "";
-  }
-  document.getElementById("taskType").value = row.task_type || "";
-  deadlineEl.value = toDatetimeLocalValue(row.deadline);
-  formEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  taskTextEl.focus();
-}
-
 function startOfLocalDay(d) {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
@@ -221,7 +91,6 @@ function groupTasks(tasks) {
   const now = new Date();
   const todayStart = startOfLocalDay(now);
   const tomorrowStart = startOfLocalDay(addCalendarDays(now, 1));
-  const dayAfterTomorrowStart = startOfLocalDay(addCalendarDays(now, 2));
 
   const completed = [];
   const overdue = [];
@@ -315,6 +184,10 @@ function rowBackgroundForTaskType(taskTypeRaw) {
   return taskTypeColors.get(name) || null;
 }
 
+function openTaskEdit(row) {
+  window.location.href = `./task.html?edit=${encodeURIComponent(row.id)}`;
+}
+
 function renderTableRows(tbody, rows) {
   tbody.innerHTML = "";
   for (const row of rows) {
@@ -328,27 +201,31 @@ function renderTableRows(tbody, rows) {
 
     const tdNum = document.createElement("td");
     tdNum.className = "cell-num cell-num--edit";
-    tdNum.textContent = formatTaskNumber(row.task_number);
+    const numBadge = document.createElement("span");
+    numBadge.className = "cell-num__badge";
+    numBadge.textContent = formatTaskNumber(row.task_number);
+    tdNum.appendChild(numBadge);
     tdNum.title = "Редактировать задачу";
     tdNum.setAttribute("role", "button");
     tdNum.tabIndex = 0;
     const onOpenEdit = (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
-      startEditTask(row);
+      openTaskEdit(row);
     };
     tdNum.addEventListener("click", onOpenEdit);
     tdNum.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter" || ev.key === " ") {
         ev.preventDefault();
-        startEditTask(row);
+        openTaskEdit(row);
       }
     });
     const tdText = el("td", "cell-text cell-task");
     tdText.textContent = (row.task_text || row.title || "").trim() || "—";
 
     const tdClient = el("td", "cell-nowrap cell-client", row.client_name || "—");
-    const tdPhone = el("td", "cell-nowrap cell-phone", row.phone || "—");
+    const phoneDisplay = row.phone ? formatPhoneInput(row.phone) || row.phone : "—";
+    const tdPhone = el("td", "cell-nowrap cell-phone", phoneDisplay);
     const tdEmail = el("td", "cell-nowrap cell-email", row.email || "—");
     const tdType = el("td", "cell-nowrap cell-type", row.task_type || "—");
     const tdDeadline = el("td", "cell-nowrap cell-deadline", fmtDateTime(row.deadline));
@@ -380,55 +257,84 @@ function renderSection(title, variant, rows) {
   const section = el("section", `task-block task-block--${variant}`);
   section.setAttribute("aria-label", title);
 
-  const head = el("div", "task-block__head");
-  head.appendChild(el("h2", "task-block__title", title));
-  head.appendChild(el("span", "task-block__count", String(rows.length)));
-
-  const wrap = el("div", "table-wrap");
-  if (rows.length === 0) {
-    const empty = el("p", "empty-block", "В этом разделе пока нет задач.");
-    section.append(head, empty);
-    return section;
+  const head = el("div", "task-block__head task-block__head--collapsible");
+  head.setAttribute("role", "button");
+  head.setAttribute("tabindex", "0");
+  const defaultCollapsed = variant === "done";
+  if (defaultCollapsed) {
+    section.classList.add("task-block--collapsed");
+    head.setAttribute("aria-expanded", "false");
+  } else {
+    head.setAttribute("aria-expanded", "true");
   }
 
-  const table = el("table", "data-table");
-  table.appendChild(buildColGroup());
-  table.appendChild(
-    (() => {
-      const thead = document.createElement("thead");
-      const tr = document.createElement("tr");
-      const headers = [
-        "№",
-        "Задача",
-        "Клиент",
-        "Телефон",
-        "Email",
-        "Тип",
-        "Дедлайн",
-        "Закрыта",
-        "",
-      ];
-      headers.forEach((h, i) => {
-        const th = document.createElement("th");
-        th.scope = "col";
-        if (i === headers.length - 1 && h === "") {
-          th.setAttribute("aria-label", "Удаление");
-          th.className = "cell-actions-head";
-        } else {
-          th.textContent = h;
-        }
-        tr.appendChild(th);
-      });
-      thead.appendChild(tr);
-      return thead;
-    })()
-  );
+  const titleEl = el("h2", "task-block__title", title);
+  const countEl = el("span", "task-block__count", String(rows.length));
+  const icon = el("span", "task-block__collapse-icon");
+  icon.setAttribute("aria-hidden", "true");
+  head.append(titleEl, countEl, icon);
 
-  const tbody = document.createElement("tbody");
-  renderTableRows(tbody, rows);
-  table.appendChild(tbody);
-  wrap.appendChild(table);
-  section.append(head, wrap);
+  const toggleCollapse = () => {
+    const nowCollapsed = section.classList.toggle("task-block--collapsed");
+    head.setAttribute("aria-expanded", String(!nowCollapsed));
+  };
+  head.addEventListener("click", toggleCollapse);
+  head.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleCollapse();
+    }
+  });
+
+  const body = el("div", "task-block__body");
+  body.id = `task-block-panel-${variant}`;
+  head.setAttribute("aria-controls", body.id);
+
+  if (rows.length === 0) {
+    body.appendChild(el("p", "empty-block", "В этом разделе пока нет задач."));
+  } else {
+    const wrap = el("div", "table-wrap");
+    const table = el("table", "data-table");
+    table.appendChild(buildColGroup());
+    table.appendChild(
+      (() => {
+        const thead = document.createElement("thead");
+        const tr = document.createElement("tr");
+        const headers = [
+          "№",
+          "Задача",
+          "Клиент",
+          "Телефон",
+          "Email",
+          "Тип",
+          "Дедлайн",
+          "Закрыта",
+          "",
+        ];
+        headers.forEach((h, i) => {
+          const th = document.createElement("th");
+          th.scope = "col";
+          if (i === headers.length - 1 && h === "") {
+            th.setAttribute("aria-label", "Удаление");
+            th.className = "cell-actions-head";
+          } else {
+            th.textContent = h;
+          }
+          tr.appendChild(th);
+        });
+        thead.appendChild(tr);
+        return thead;
+      })()
+    );
+
+    const tbody = document.createElement("tbody");
+    renderTableRows(tbody, rows);
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    body.appendChild(wrap);
+  }
+
+  section.append(head, body);
   return section;
 }
 
@@ -477,101 +383,8 @@ async function deleteTask(id) {
     setStatus(`Ошибка удаления: ${error.message}`, true);
     return;
   }
-  if (editingTaskId === id) {
-    clearEditMode();
-    formEl.reset();
-  }
   await loadTasks();
 }
-
-function validateTaskForm() {
-  taskTextEl.closest(".field")?.classList.remove("field--invalid");
-  deadlineEl.closest(".field")?.classList.remove("field--invalid");
-  const taskText = taskTextEl.value.trim();
-  const deadlineRaw = deadlineEl.value.trim();
-  let valid = true;
-  if (!taskText) {
-    taskTextEl.closest(".field")?.classList.add("field--invalid");
-    valid = false;
-  }
-  if (!deadlineRaw) {
-    deadlineEl.closest(".field")?.classList.add("field--invalid");
-    valid = false;
-  }
-  return valid;
-}
-
-taskTextEl.addEventListener("input", () => {
-  taskTextEl.closest(".field")?.classList.remove("field--invalid");
-});
-deadlineEl.addEventListener("input", () => {
-  deadlineEl.closest(".field")?.classList.remove("field--invalid");
-});
-deadlineEl.addEventListener("change", () => {
-  deadlineEl.closest(".field")?.classList.remove("field--invalid");
-});
-
-document.getElementById("clientSelect").addEventListener("change", () => {
-  const id = document.getElementById("clientSelect").value;
-  if (id && id !== "__legacy__") {
-    const c = clientsById.get(id);
-    if (c) {
-      document.getElementById("phone").value = c.phone || "";
-      document.getElementById("email").value = c.email || "";
-    }
-  }
-});
-
-formEl.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const taskText = taskTextEl.value.trim();
-  const deadlineRaw = deadlineEl.value.trim();
-
-  if (!validateTaskForm()) {
-    setStatus("Заполните текст задачи и дедлайн.", true);
-    if (!taskText) taskTextEl.focus();
-    else deadlineEl.focus();
-    return;
-  }
-
-  hideStatus();
-
-  const client_name = getClientNameFromForm();
-  const phone = document.getElementById("phone").value.trim() || null;
-  const email = document.getElementById("email").value.trim() || null;
-  const task_type = document.getElementById("taskType").value.trim() || null;
-  const deadline = new Date(deadlineRaw).toISOString();
-
-  const payload = {
-    task_text: taskText,
-    title: taskText,
-    client_name,
-    phone,
-    email,
-    task_type,
-    deadline,
-  };
-
-  let error;
-  if (editingTaskId) {
-    ({ error } = await supabase.from("tasks").update(payload).eq("id", editingTaskId));
-  } else {
-    ({ error } = await supabase.from("tasks").insert({ ...payload, closed: false }));
-  }
-
-  if (error) {
-    setStatus(
-      editingTaskId ? `Ошибка сохранения: ${error.message}` : `Ошибка добавления: ${error.message}`,
-      true
-    );
-    return;
-  }
-
-  clearEditMode();
-  formEl.reset();
-  await loadTasks();
-});
 
 if (isConfigPlaceholder()) {
   setStatus(

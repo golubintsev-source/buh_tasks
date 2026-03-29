@@ -15,6 +15,8 @@
       <nav class="app-nav" aria-label="Разделы">
         <a class="app-nav__link" href="./index.html">Задачи</a>
         <span class="app-nav__sep" aria-hidden="true">·</span>
+        <a class="app-nav__link" href="./task.html">Новая задача</a>
+        <span class="app-nav__sep" aria-hidden="true">·</span>
         <span class="app-nav__current">Настройки</span>
       </nav>
 
@@ -29,7 +31,7 @@
           </label>
           <label class="field field--compact">
             <span class="field__label">Телефон</span>
-            <input type="tel" id="newClientPhone" name="phone" placeholder="+7 …" maxlength="50" />
+            <input type="tel" id="newClientPhone" name="phone" placeholder="+7-901-123-12-12" maxlength="16" />
           </label>
           <label class="field field--compact">
             <span class="field__label">Email</span>
@@ -57,15 +59,11 @@
 
       <section class="panel panel--settings" aria-labelledby="types-heading">
         <h2 id="types-heading" class="settings-block__title">Типы задач</h2>
-        <p class="settings-hint">Используются в списке «Тип» на странице задач. Цвет задаёт подсветку строк с этим типом (палитра в браузере — любой оттенок).</p>
-        <form id="taskTypeAddForm" class="settings-add-row settings-add-row--types" autocomplete="off">
+        <p class="settings-hint">Используются в списке «Тип» на странице задач. Цвет подсветки строк можно задать в таблице ниже; новый тип создаётся с цветом по умолчанию.</p>
+        <form id="taskTypeAddForm" class="settings-add-row settings-add-row--narrow" autocomplete="off">
           <label class="field field--compact">
             <span class="field__label">Название типа</span>
             <input type="text" id="newTaskTypeName" name="name" placeholder="Например: Сверка" maxlength="200" required />
-          </label>
-          <label class="field field--compact field--color">
-            <span class="field__label">Цвет строк</span>
-            <input type="color" id="newTaskTypeColor" name="color" value="#dbeafe" title="Цвет фона строк с этим типом на странице задач" />
           </label>
           <div class="field field--add-btn">
             <span class="field__label field__label--placeholder" aria-hidden="true">&nbsp;</span>

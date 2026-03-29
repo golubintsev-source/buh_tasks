@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Новая задача — Бух задачи</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="app">
+    <main class="main">
+      <nav class="app-nav" aria-label="Разделы">
+        <a class="app-nav__link" href="./index.html">Задачи</a>
+        <span class="app-nav__sep" aria-hidden="true">·</span>
+        <span class="app-nav__current" id="taskNavLabel">Новая задача</span>
+        <span class="app-nav__sep" aria-hidden="true">·</span>
+        <a class="app-nav__link" href="./settings.html">Настройки</a>
+      </nav>
+
+      <div id="status" class="status" role="alert" hidden></div>
+
+      <section class="panel panel--form" aria-label="Форма задачи">
+        <form id="taskForm" class="form form--compact" autocomplete="off" novalidate>
+          <div class="form__row form__row--task">
+            <label class="field field--task-text">
+              <span class="field__label" id="taskTextLabel">Текст задачи</span>
+              <textarea
+                id="taskText"
+                name="task_text"
+                rows="2"
+                placeholder="Опишите задачу…"
+                maxlength="4000"
+                aria-required="true"
+              ></textarea>
+            </label>
+          </div>
+          <div class="form__row form__row--meta">
+            <label class="field field--compact">
+              <span class="field__label">Клиент</span>
+              <select id="clientSelect" name="client_id">
+                <option value="">— выберите клиента —</option>
+              </select>
+            </label>
+            <label class="field field--compact">
+              <span class="field__label">Телефон</span>
+              <input type="tel" id="phone" name="phone" placeholder="+7-901-123-12-12" maxlength="16" />
+            </label>
+            <label class="field field--compact">
+              <span class="field__label">Email</span>
+              <input type="email" id="email" name="email" placeholder="email@…" maxlength="320" />
+            </label>
+            <label class="field field--compact field--type">
+              <span class="field__label">Тип</span>
+              <select id="taskType" name="task_type">
+                <option value="">—</option>
+              </select>
+            </label>
+            <label class="field field--compact field--deadline">
+              <span class="field__label">Дедлайн</span>
+              <input type="datetime-local" id="deadline" name="deadline" aria-required="true" />
+            </label>
+            <div class="field field--submit">
+              <span class="field__label field__label--placeholder" aria-hidden="true">&nbsp;</span>
+              <button type="submit" class="btn btn--primary btn--save" id="taskSubmitBtn">Сохранить</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="/api/supabase-public-config"></script>
+  <script src="./js/config.local.js"></script>
+  <script type="module" src="./js/task-form.js"></script>
+</body>
+</html>

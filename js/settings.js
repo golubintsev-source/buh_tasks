@@ -1,8 +1,15 @@
 import { supabase, SUPABASE_URL, SUPABASE_KEY } from "./config.js";
+import {
+  attachPhoneMask,
+  formatPhoneInput,
+  phoneForStorage,
+  isPhoneEmptyOrComplete,
+} from "./phoneMask.js";
 
 const statusEl = document.getElementById("status");
 const clientsBody = document.getElementById("clientsTableBody");
 const typesBody = document.getElementById("taskTypesTableBody");
+const newClientPhoneEl = document.getElementById("newClientPhone");
 
 function isConfigPlaceholder() {
   return (
@@ -41,6 +48,9 @@ function normalizeHexColor(raw) {
 
 const DEFAULT_TYPE_COLOR = "#e2e8f0";
 
+/** Цвет для новых типов при добавлении (без выбора в форме) */
+const DEFAULT_NEW_TASK_TYPE_COLOR = "#dbeafe";
+
 async function loadClients() {
   const { data, error } = await supabase.from("clients").select("*").order("name");
   if (error) {
@@ -50,7 +60,10 @@ async function loadClients() {
   clientsBody.innerHTML = "";
   for (const row of data || []) {
     const tr = document.createElement("tr");
-    for (const text of [row.name, row.phone || "—", row.email || "—"]) {
+    const phoneDisplay = row.phone
+      ? formatPhoneInput(row.phone) || row.phone
+      : "—";
+    for (const text of [row.name, phoneDisplay, row.email || "—"]) {
       const td = document.createElement("td");
       td.textContent = text;
       tr.appendChild(td);
@@ -145,7 +158,13 @@ document.getElementById("clientAddForm").addEventListener("submit", async (e) =>
   e.preventDefault();
   const name = document.getElementById("newClientName").value.trim();
   if (!name) return;
-  const phone = document.getElementById("newClientPhone").value.trim() || null;
+  const phoneRaw = newClientPhoneEl.value;
+  if (!isPhoneEmptyOrComplete(phoneRaw)) {
+    setStatus("Телефон: введите полностью (+7-901-123-12-12) или оставьте поле пустым.", true);
+    newClientPhoneEl.focus();
+    return;
+  }
+  const phone = phoneForStorage(phoneRaw);
   const email = document.getElementById("newClientEmail").value.trim() || null;
   const { error } = await supabase.from("clients").insert({ name, phone, email });
   if (error) {
@@ -160,8 +179,7 @@ document.getElementById("taskTypeAddForm").addEventListener("submit", async (e) 
   e.preventDefault();
   const name = document.getElementById("newTaskTypeName").value.trim();
   if (!name) return;
-  const colorHex = document.getElementById("newTaskTypeColor").value;
-  const color = normalizeHexColor(colorHex);
+  const color = normalizeHexColor(DEFAULT_NEW_TASK_TYPE_COLOR);
   const { error } = await supabase
     .from("task_types")
     .insert({ name, sort_order: 99, color });
@@ -176,6 +194,7 @@ document.getElementById("taskTypeAddForm").addEventListener("submit", async (e) 
 if (isConfigPlaceholder()) {
   setStatus("Укажите ключи Supabase (config.local.js / Vercel).", true);
 } else {
+  attachPhoneMask(newClientPhoneEl);
   loadClients();
   loadTaskTypes();
 }
