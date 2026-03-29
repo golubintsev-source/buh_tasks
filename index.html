@@ -15,17 +15,17 @@
       <div id="status" class="status" role="alert" hidden></div>
 
       <section class="panel panel--form" aria-label="Новая задача">
-        <form id="taskForm" class="form form--compact" autocomplete="off">
+        <form id="taskForm" class="form form--compact" autocomplete="off" novalidate>
           <div class="form__row form__row--task">
             <label class="field field--task-text">
-              <span class="field__label">Текст задачи</span>
+              <span class="field__label" id="taskTextLabel">Текст задачи</span>
               <textarea
                 id="taskText"
                 name="task_text"
                 rows="2"
                 placeholder="Опишите задачу…"
-                required
                 maxlength="4000"
+                aria-required="true"
               ></textarea>
             </label>
           </div>
@@ -55,11 +55,11 @@
             </label>
             <label class="field field--compact field--deadline">
               <span class="field__label">Дедлайн</span>
-              <input type="datetime-local" id="deadline" name="deadline" />
+              <input type="datetime-local" id="deadline" name="deadline" aria-required="true" />
             </label>
             <div class="field field--submit">
               <span class="field__label field__label--placeholder" aria-hidden="true">&nbsp;</span>
-              <button type="submit" class="btn btn--primary btn--save">Сохранить</button>
+              <button type="submit" class="btn btn--primary btn--save" id="taskSubmitBtn">Сохранить</button>
             </div>
           </div>
         </form>

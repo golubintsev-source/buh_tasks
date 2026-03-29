@@ -3,6 +3,11 @@ import { supabase, SUPABASE_URL, SUPABASE_KEY } from "./config.js";
 const boardEl = document.getElementById("taskBoard");
 const formEl = document.getElementById("taskForm");
 const statusEl = document.getElementById("status");
+const taskTextEl = document.getElementById("taskText");
+const deadlineEl = document.getElementById("deadline");
+
+/** @type {string | null} */
+let editingTaskId = null;
 
 function isConfigPlaceholder() {
   return (
@@ -33,6 +38,47 @@ function fmtDateTime(iso) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/** Номер задачи в виде 007 (минимум 3 цифры; при >999 длина растёт). */
+function formatTaskNumber(n) {
+  if (n == null || n === "") return "—";
+  const num = Number(n);
+  if (!Number.isFinite(num)) return "—";
+  return String(Math.trunc(num)).padStart(3, "0");
+}
+
+function toDatetimeLocalValue(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function clearEditMode() {
+  editingTaskId = null;
+  const lbl = document.getElementById("taskTextLabel");
+  if (lbl) lbl.textContent = "Текст задачи";
+  const btn = document.getElementById("taskSubmitBtn");
+  if (btn) btn.textContent = "Сохранить";
+}
+
+function startEditTask(row) {
+  editingTaskId = row.id;
+  taskTextEl.closest(".field")?.classList.remove("field--invalid");
+  deadlineEl.closest(".field")?.classList.remove("field--invalid");
+  hideStatus();
+  const lbl = document.getElementById("taskTextLabel");
+  if (lbl) lbl.textContent = `Текст задачи (№ ${formatTaskNumber(row.task_number)})`;
+  taskTextEl.value = (row.task_text || row.title || "").trim();
+  document.getElementById("clientName").value = row.client_name || "";
+  document.getElementById("phone").value = row.phone || "";
+  document.getElementById("email").value = row.email || "";
+  document.getElementById("taskType").value = row.task_type || "";
+  deadlineEl.value = toDatetimeLocalValue(row.deadline);
+  formEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  taskTextEl.focus();
 }
 
 function startOfLocalDay(d) {
@@ -145,7 +191,24 @@ function renderTableRows(tbody, rows) {
     const tr = document.createElement("tr");
     tr.dataset.id = row.id;
 
-    const tdNum = el("td", "cell-num", row.task_number != null ? String(row.task_number) : "—");
+    const tdNum = document.createElement("td");
+    tdNum.className = "cell-num cell-num--edit";
+    tdNum.textContent = formatTaskNumber(row.task_number);
+    tdNum.title = "Редактировать задачу";
+    tdNum.setAttribute("role", "button");
+    tdNum.tabIndex = 0;
+    const onOpenEdit = (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      startEditTask(row);
+    };
+    tdNum.addEventListener("click", onOpenEdit);
+    tdNum.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        startEditTask(row);
+      }
+    });
     const tdText = el("td", "cell-text cell-task");
     tdText.textContent = (row.task_text || row.title || "").trim() || "—";
 
@@ -279,23 +342,62 @@ async function deleteTask(id) {
     setStatus(`Ошибка удаления: ${error.message}`, true);
     return;
   }
+  if (editingTaskId === id) {
+    clearEditMode();
+    formEl.reset();
+  }
   await loadTasks();
 }
+
+function validateTaskForm() {
+  taskTextEl.closest(".field")?.classList.remove("field--invalid");
+  deadlineEl.closest(".field")?.classList.remove("field--invalid");
+  const taskText = taskTextEl.value.trim();
+  const deadlineRaw = deadlineEl.value.trim();
+  let valid = true;
+  if (!taskText) {
+    taskTextEl.closest(".field")?.classList.add("field--invalid");
+    valid = false;
+  }
+  if (!deadlineRaw) {
+    deadlineEl.closest(".field")?.classList.add("field--invalid");
+    valid = false;
+  }
+  return valid;
+}
+
+taskTextEl.addEventListener("input", () => {
+  taskTextEl.closest(".field")?.classList.remove("field--invalid");
+});
+deadlineEl.addEventListener("input", () => {
+  deadlineEl.closest(".field")?.classList.remove("field--invalid");
+});
+deadlineEl.addEventListener("change", () => {
+  deadlineEl.closest(".field")?.classList.remove("field--invalid");
+});
 
 formEl.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const taskText = document.getElementById("taskText").value.trim();
-  if (!taskText) return;
+  const taskText = taskTextEl.value.trim();
+  const deadlineRaw = deadlineEl.value.trim();
+
+  if (!validateTaskForm()) {
+    setStatus("Заполните текст задачи и дедлайн.", true);
+    if (!taskText) taskTextEl.focus();
+    else deadlineEl.focus();
+    return;
+  }
+
+  hideStatus();
 
   const client_name = document.getElementById("clientName").value.trim() || null;
   const phone = document.getElementById("phone").value.trim() || null;
   const email = document.getElementById("email").value.trim() || null;
   const task_type = document.getElementById("taskType").value.trim() || null;
-  const deadlineRaw = document.getElementById("deadline").value;
-  const deadline = deadlineRaw ? new Date(deadlineRaw).toISOString() : null;
+  const deadline = new Date(deadlineRaw).toISOString();
 
-  const { error } = await supabase.from("tasks").insert({
+  const payload = {
     task_text: taskText,
     title: taskText,
     client_name,
@@ -303,14 +405,24 @@ formEl.addEventListener("submit", async (e) => {
     email,
     task_type,
     deadline,
-    closed: false,
-  });
+  };
+
+  let error;
+  if (editingTaskId) {
+    ({ error } = await supabase.from("tasks").update(payload).eq("id", editingTaskId));
+  } else {
+    ({ error } = await supabase.from("tasks").insert({ ...payload, closed: false }));
+  }
 
   if (error) {
-    setStatus(`Ошибка добавления: ${error.message}`, true);
+    setStatus(
+      editingTaskId ? `Ошибка сохранения: ${error.message}` : `Ошибка добавления: ${error.message}`,
+      true
+    );
     return;
   }
 
+  clearEditMode();
   formEl.reset();
   await loadTasks();
 });

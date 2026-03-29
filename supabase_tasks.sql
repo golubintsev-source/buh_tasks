@@ -24,6 +24,10 @@ alter table public.tasks add column if not exists closed boolean;
 alter table public.tasks add column if not exists title text;
 alter table public.tasks add column if not exists task_number integer;
 
+-- Если раньше создали триггер без колонки — убираем, иначе INSERT падает с «new has no field task_number»
+drop trigger if exists tasks_assign_task_number on public.tasks;
+drop function if exists public.tasks_assign_task_number();
+
 -- Порядковый номер задачи (автоинкремент; только для строк без номера)
 update public.tasks t
 set task_number = numbered.new_no
@@ -46,6 +50,8 @@ select setval(
 alter table public.tasks
   alter column task_number set default nextval('public.tasks_task_number_seq');
 
+alter sequence public.tasks_task_number_seq owned by public.tasks.task_number;
+
 alter table public.tasks alter column task_number set not null;
 
 do $$
@@ -54,25 +60,6 @@ begin
 exception
   when duplicate_object then null;
 end $$;
-
--- Гарантированная подстановка номера при INSERT (если DEFAULT не сработал через API)
-create or replace function public.tasks_assign_task_number()
-returns trigger
-language plpgsql
-as $$
-begin
-  if new.task_number is null then
-    new.task_number := nextval('public.tasks_task_number_seq');
-  end if;
-  return new;
-end;
-$$;
-
-drop trigger if exists tasks_assign_task_number on public.tasks;
-create trigger tasks_assign_task_number
-  before insert on public.tasks
-  for each row
-  execute procedure public.tasks_assign_task_number();
 
 -- Старая схема: title NOT NULL без task_text в INSERT — снимаем жёсткое ограничение
 do $$
