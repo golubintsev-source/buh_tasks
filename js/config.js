@@ -7,12 +7,12 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 export const SUPABASE_URL =
   typeof window !== "undefined" && window.__SUPABASE_URL__
     ? window.__SUPABASE_URL__
-    : "https://YOUR_PROJECT_REF.supabase.co";
+    : "https://umhmrhuwuenhltmpvczb.supabase.co";
 
 export const SUPABASE_KEY =
   typeof window !== "undefined" && window.__SUPABASE_ANON_KEY__
     ? window.__SUPABASE_ANON_KEY__
-    : "YOUR_SUPABASE_ANON_KEY";
+    : "sb_publishable_IO5zNJ_9wMizRGwrvVPIsA_mdPCVfeP";
 
 function shouldUseDbProxy() {
   if (typeof window.__SUPABASE_USE_PROXY__ === "boolean") {
