@@ -107,6 +107,27 @@ function el(tag, className, text) {
 
 const TRASH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
 
+function buildColGroup() {
+  const cg = document.createElement("colgroup");
+  const classes = [
+    "data-table__col--num",
+    "data-table__col--task",
+    "data-table__col--client",
+    "data-table__col--phone",
+    "data-table__col--email",
+    "data-table__col--type",
+    "data-table__col--deadline",
+    "data-table__col--closed",
+    "data-table__col--actions",
+  ];
+  for (const cls of classes) {
+    const col = document.createElement("col");
+    col.className = `data-table__col ${cls}`;
+    cg.appendChild(col);
+  }
+  return cg;
+}
+
 function trashButton(onClick) {
   const btn = document.createElement("button");
   btn.type = "button";
@@ -125,15 +146,14 @@ function renderTableRows(tbody, rows) {
     tr.dataset.id = row.id;
 
     const tdNum = el("td", "cell-num", row.task_number != null ? String(row.task_number) : "—");
-    const tdCreated = el("td", "cell-nowrap", fmtDateTime(row.created_at));
-    const tdText = el("td", "cell-text");
+    const tdText = el("td", "cell-text cell-task");
     tdText.textContent = (row.task_text || row.title || "").trim() || "—";
 
-    const tdClient = el("td", null, row.client_name || "—");
-    const tdPhone = el("td", "cell-nowrap", row.phone || "—");
-    const tdEmail = el("td", null, row.email || "—");
-    const tdType = el("td", "cell-nowrap", row.task_type || "—");
-    const tdDeadline = el("td", "cell-nowrap", fmtDateTime(row.deadline));
+    const tdClient = el("td", "cell-nowrap cell-client", row.client_name || "—");
+    const tdPhone = el("td", "cell-nowrap cell-phone", row.phone || "—");
+    const tdEmail = el("td", "cell-nowrap cell-email", row.email || "—");
+    const tdType = el("td", "cell-nowrap cell-type", row.task_type || "—");
+    const tdDeadline = el("td", "cell-nowrap cell-deadline", fmtDateTime(row.deadline));
 
     const tdClosed = document.createElement("td");
     tdClosed.className = "check-cell";
@@ -153,18 +173,7 @@ function renderTableRows(tbody, rows) {
       })
     );
 
-    tr.append(
-      tdNum,
-      tdCreated,
-      tdText,
-      tdClient,
-      tdPhone,
-      tdEmail,
-      tdType,
-      tdDeadline,
-      tdClosed,
-      tdDelete
-    );
+    tr.append(tdNum, tdText, tdClient, tdPhone, tdEmail, tdType, tdDeadline, tdClosed, tdDelete);
     tbody.appendChild(tr);
   }
 }
@@ -185,13 +194,13 @@ function renderSection(title, variant, rows) {
   }
 
   const table = el("table", "data-table");
+  table.appendChild(buildColGroup());
   table.appendChild(
     (() => {
       const thead = document.createElement("thead");
       const tr = document.createElement("tr");
       const headers = [
         "№",
-        "Создано",
         "Задача",
         "Клиент",
         "Телефон",

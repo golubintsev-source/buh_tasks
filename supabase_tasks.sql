@@ -55,6 +55,25 @@ exception
   when duplicate_object then null;
 end $$;
 
+-- Гарантированная подстановка номера при INSERT (если DEFAULT не сработал через API)
+create or replace function public.tasks_assign_task_number()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.task_number is null then
+    new.task_number := nextval('public.tasks_task_number_seq');
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists tasks_assign_task_number on public.tasks;
+create trigger tasks_assign_task_number
+  before insert on public.tasks
+  for each row
+  execute procedure public.tasks_assign_task_number();
+
 -- Старая схема: title NOT NULL без task_text в INSERT — снимаем жёсткое ограничение
 do $$
 begin

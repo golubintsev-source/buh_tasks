@@ -321,17 +321,57 @@ body {
 }
 
 .data-table {
+  table-layout: fixed;
   width: 100%;
+  min-width: 58rem;
   border-collapse: collapse;
   font-size: 0.875rem;
 }
 
+/* Сумма 100% — одинаковая сетка во всех блоках */
+.data-table__col--num {
+  width: 4%;
+}
+
+.data-table__col--task {
+  width: 31%;
+}
+
+.data-table__col--client {
+  width: 11%;
+}
+
+.data-table__col--phone {
+  width: 10%;
+}
+
+.data-table__col--email {
+  width: 14%;
+}
+
+.data-table__col--type {
+  width: 7%;
+}
+
+.data-table__col--deadline {
+  width: 12%;
+}
+
+.data-table__col--closed {
+  width: 5%;
+}
+
+.data-table__col--actions {
+  width: 6%;
+}
+
 .data-table th,
 .data-table td {
-  padding: 0.65rem 0.85rem;
+  padding: 0.65rem 0.65rem;
   text-align: left;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
+  overflow: hidden;
 }
 
 .data-table th {
@@ -361,9 +401,13 @@ body {
 }
 
 .cell-text {
-  max-width: 280px;
   white-space: pre-wrap;
   word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.cell-task {
+  hyphens: auto;
 }
 
 .cell-nowrap {
@@ -371,7 +415,6 @@ body {
 }
 
 .cell-num {
-  width: 3rem;
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -380,7 +423,7 @@ body {
 
 .check-cell {
   text-align: center;
-  width: 4.5rem;
+  overflow: visible;
 }
 
 .check-cell input {
@@ -391,15 +434,15 @@ body {
 }
 
 .cell-actions-head {
-  width: 3rem;
+  box-sizing: border-box;
 }
 
 .cell-actions {
   text-align: center;
   vertical-align: middle;
-  width: 3rem;
-  padding-left: 0.35rem;
-  padding-right: 0.35rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  overflow: visible;
 }
 
 .btn-icon {
