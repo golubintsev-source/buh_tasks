@@ -82,7 +82,7 @@ formEl.addEventListener("submit", async (e) => {
 
 if (isConfigPlaceholder()) {
   setStatus(
-    "Укажите SUPABASE_URL и anon key в js/config.js (или через window в index.html).",
+    "Укажите URL и anon key: скопируйте js/config.local.example.js в js/config.local.js и заполните (или задайте window.__SUPABASE_URL__ / window.__SUPABASE_ANON_KEY__ до загрузки модулей).",
     true
   );
 } else {

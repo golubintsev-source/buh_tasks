@@ -9,7 +9,7 @@
 <body>
   <header class="app-header">
     <h1>Бух задачи</h1>
-    <p>Список задач в Supabase. Настройте ключи в <code>js/config.js</code> и выполните SQL из <code>supabase_tasks.sql</code>.</p>
+    <p>Список задач в Supabase. Скопируйте <code>js/config.local.example.js</code> → <code>js/config.local.js</code> и укажите ключи; выполните SQL из <code>supabase_tasks.sql</code>.</p>
   </header>
   <main>
     <div id="status" class="status" role="status" hidden></div>
@@ -29,6 +29,7 @@
     <ul id="taskList" class="task-list" aria-label="Список задач"></ul>
   </main>
 
+  <script src="./js/config.local.js"></script>
   <script type="module" src="./js/main.js"></script>
 </body>
 </html>
