@@ -1,7 +1,0 @@
-{
-  "name": "buh_tasks",
-  "private": true,
-  "scripts": {
-    "build": "node scripts/vercel-generate-config-local.js"
-  }
-}

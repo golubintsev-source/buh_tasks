@@ -1,9 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
   "functions": {
     "api/supabase-proxy.js": {
       "maxDuration": 60
+    },
+    "api/supabase-public-config.js": {
+      "maxDuration": 10
     }
   }
 }

@@ -1,6 +1,6 @@
 # Бух задачи
 
-Статический сайт (HTML/CSS/JS) + Supabase + Vercel. Node на вашем ПК не обязателен; на стороне Vercel при деплое выполняется `npm run build` и подставляется `js/config.local.js` из переменных окружения.
+Статический сайт (HTML/CSS/JS) + Supabase + Vercel. Node на вашем ПК не обязателен. На Vercel ключи для страницы подставляет серверная функция `api/supabase-public-config.js` из переменных окружения (отдельно от сборки).
 
 ## 1. Supabase
 
@@ -24,9 +24,9 @@
    - `SUPABASE_URL` — **Project URL** из Supabase
    - `SUPABASE_ANON_KEY` — **anon public** key
 
-   Они нужны и **серверной** функции `/api/supabase-proxy`, и **сборке**: перед выкладкой сайта выполняется `npm run build`, скрипт `scripts/vercel-generate-config-local.js` записывает в артефакт деплоя `js/config.local.js` с этими значениями — без этого в браузере остаются заглушки и показывается красная подсказка.
+   Они используются функциями **`/api/supabase-proxy`** и **`/api/supabase-public-config`** (вторая отдаёт в браузер `window.__SUPABASE_*` без коммита ключей в репозиторий).
 
-3. Сделайте **Redeploy** последнего деплоя (или новый push), чтобы сборка прошла уже с переменными.
+3. Сделайте **Redeploy** после добавления или изменения переменных (или новый push в `main`).
 
 4. Откройте адрес `*.vercel.app`: запросы к базе идут через `/api/supabase-proxy`.
 

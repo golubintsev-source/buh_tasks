@@ -82,7 +82,7 @@ formEl.addEventListener("submit", async (e) => {
 
 if (isConfigPlaceholder()) {
   setStatus(
-    "Укажите URL и anon key: скопируйте js/config.local.example.js в js/config.local.js и заполните (или задайте window.__SUPABASE_URL__ / window.__SUPABASE_ANON_KEY__ до загрузки модулей).",
+    "Укажите URL и anon key. Локально: js/config.local.js из примера. На Vercel: переменные SUPABASE_URL и SUPABASE_ANON_KEY в проекте и Redeploy.",
     true
   );
 } else {
