@@ -1,6 +1,6 @@
 # Бух задачи
 
-Статический сайт (HTML/CSS/JS) + Supabase + Vercel. Node.js на компьютере не нужен.
+Статический сайт (HTML/CSS/JS) + Supabase + Vercel. Node на вашем ПК не обязателен; на стороне Vercel при деплое выполняется `npm run build` и подставляется `js/config.local.js` из переменных окружения.
 
 ## 1. Supabase
 
@@ -19,14 +19,16 @@
 ## 3. GitHub и Vercel
 
 1. Инициализируйте git в папке проекта, сделайте первый commit и отправьте в ваш репозиторий.
-2. В Vercel импортируйте репозиторий и добавьте переменные окружения:
+2. В Vercel импортируйте репозиторий и в **Settings → Environment Variables** добавьте (для Production и Preview):
 
-   - `SUPABASE_URL` — тот же URL
-   - `SUPABASE_ANON_KEY` — тот же anon key
+   - `SUPABASE_URL` — **Project URL** из Supabase
+   - `SUPABASE_ANON_KEY` — **anon public** key
 
-   Они используются **серверной** функцией `/api/supabase-proxy`. Браузеру всё равно нужны те же URL и anon key при инициализации клиента: для продакшена создайте локально `js/config.local.js` (не коммитьте) с теми же значениями и выполните `vercel deploy`, либо временно задайте `window.__SUPABASE_URL__` / `window.__SUPABASE_ANON_KEY__` в `index.html` только на этапе деплоя и не публикуйте их в открытом репозитории.
+   Они нужны и **серверной** функции `/api/supabase-proxy`, и **сборке**: перед выкладкой сайта выполняется `npm run build`, скрипт `scripts/vercel-generate-config-local.js` записывает в артефакт деплоя `js/config.local.js` с этими значениями — без этого в браузере остаются заглушки и показывается красная подсказка.
 
-3. После деплоя откройте выданный адрес `*.vercel.app`: запросы к базе идут через `/api/supabase-proxy`.
+3. Сделайте **Redeploy** последнего деплоя (или новый push), чтобы сборка прошла уже с переменными.
+
+4. Откройте адрес `*.vercel.app`: запросы к базе идут через `/api/supabase-proxy`.
 
 ### Если ключ когда-либо попал в git
 
