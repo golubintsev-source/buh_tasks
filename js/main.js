@@ -106,6 +106,19 @@ function el(tag, className, text) {
   return n;
 }
 
+const TRASH_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
+
+function trashButton(onClick) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "btn-icon btn-icon--danger";
+  btn.setAttribute("aria-label", "Удалить задачу");
+  btn.title = "Удалить";
+  btn.innerHTML = TRASH_SVG;
+  btn.addEventListener("click", onClick);
+  return btn;
+}
+
 function renderTableRows(tbody, rows) {
   tbody.innerHTML = "";
   for (const row of rows) {
@@ -131,6 +144,15 @@ function renderTableRows(tbody, rows) {
     cb.addEventListener("change", () => toggleClosed(row.id, cb.checked));
     tdClosed.appendChild(cb);
 
+    const tdDelete = document.createElement("td");
+    tdDelete.className = "cell-actions";
+    tdDelete.appendChild(
+      trashButton(() => {
+        if (!confirm("Удалить эту задачу?")) return;
+        deleteTask(row.id);
+      })
+    );
+
     tr.append(
       tdCreated,
       tdText,
@@ -139,7 +161,8 @@ function renderTableRows(tbody, rows) {
       tdEmail,
       tdType,
       tdDeadline,
-      tdClosed
+      tdClosed,
+      tdDelete
     );
     tbody.appendChild(tr);
   }
@@ -174,13 +197,19 @@ function renderSection(title, variant, rows) {
         "Тип",
         "Дедлайн",
         "Закрыта",
+        "",
       ];
-      for (const h of headers) {
+      headers.forEach((h, i) => {
         const th = document.createElement("th");
         th.scope = "col";
-        th.textContent = h;
+        if (i === headers.length - 1 && h === "") {
+          th.setAttribute("aria-label", "Удаление");
+          th.className = "cell-actions-head";
+        } else {
+          th.textContent = h;
+        }
         tr.appendChild(th);
-      }
+      });
       thead.appendChild(tr);
       return thead;
     })()
@@ -228,6 +257,15 @@ async function toggleClosed(id, closed) {
   if (error) {
     setStatus(`Ошибка сохранения: ${error.message}`, true);
     await loadTasks();
+    return;
+  }
+  await loadTasks();
+}
+
+async function deleteTask(id) {
+  const { error } = await supabase.from("tasks").delete().eq("id", id);
+  if (error) {
+    setStatus(`Ошибка удаления: ${error.message}`, true);
     return;
   }
   await loadTasks();
