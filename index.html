@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Бух задачи</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Бух задачи</h1>
+    <p>Список задач в Supabase. Настройте ключи в <code>js/config.js</code> и выполните SQL из <code>supabase_tasks.sql</code>.</p>
+  </header>
+  <main>
+    <div id="status" class="status" role="status" hidden></div>
+
+    <form id="taskForm" class="task-form" autocomplete="off">
+      <input
+        id="taskTitle"
+        type="text"
+        name="title"
+        placeholder="Новая задача…"
+        maxlength="500"
+        required
+      />
+      <button type="submit">Добавить</button>
+    </form>
+
+    <ul id="taskList" class="task-list" aria-label="Список задач"></ul>
+  </main>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
