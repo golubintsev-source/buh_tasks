@@ -4,30 +4,75 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Бух задачи</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <header class="app-header">
-    <h1>Бух задачи</h1>
-    <p>Список задач в Supabase. На Vercel ключи берутся из переменных окружения; локально скопируйте <code>js/config.local.example.js</code> → <code>js/config.local.js</code>. SQL — <code>supabase_tasks.sql</code>.</p>
-  </header>
-  <main>
-    <div id="status" class="status" role="status" hidden></div>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar__inner">
+        <h1 class="topbar__title">Бух задачи</h1>
+        <p class="topbar__subtitle">Учёт задач с дедлайнами и клиентами</p>
+      </div>
+    </header>
 
-    <form id="taskForm" class="task-form" autocomplete="off">
-      <input
-        id="taskTitle"
-        type="text"
-        name="title"
-        placeholder="Новая задача…"
-        maxlength="500"
-        required
-      />
-      <button type="submit">Добавить</button>
-    </form>
+    <main class="main">
+      <div id="status" class="status" role="status" hidden></div>
 
-    <ul id="taskList" class="task-list" aria-label="Список задач"></ul>
-  </main>
+      <section class="panel panel--form" aria-labelledby="new-task-heading">
+        <h2 id="new-task-heading" class="panel__title">Новая задача</h2>
+        <form id="taskForm" class="form" autocomplete="off">
+          <div class="form__grid">
+            <label class="field field--full">
+              <span class="field__label">Текст задачи</span>
+              <textarea
+                id="taskText"
+                name="task_text"
+                rows="2"
+                placeholder="Опишите задачу…"
+                required
+                maxlength="4000"
+              ></textarea>
+            </label>
+            <label class="field">
+              <span class="field__label">Клиент</span>
+              <input type="text" id="clientName" name="client_name" placeholder="Название / ФИО" maxlength="500" />
+            </label>
+            <label class="field">
+              <span class="field__label">Телефон</span>
+              <input type="tel" id="phone" name="phone" placeholder="+7 …" maxlength="50" />
+            </label>
+            <label class="field">
+              <span class="field__label">Email</span>
+              <input type="email" id="email" name="email" placeholder="email@…" maxlength="320" />
+            </label>
+            <label class="field">
+              <span class="field__label">Тип задачи</span>
+              <select id="taskType" name="task_type">
+                <option value="">Не выбран</option>
+                <option value="Звонок">Звонок</option>
+                <option value="Встреча">Встреча</option>
+                <option value="Отчёт">Отчёт</option>
+                <option value="Документы">Документы</option>
+                <option value="Прочее">Прочее</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field__label">Дедлайн</span>
+              <input type="datetime-local" id="deadline" name="deadline" />
+            </label>
+          </div>
+          <div class="form__actions">
+            <button type="submit" class="btn btn--primary">Добавить задачу</button>
+          </div>
+        </form>
+      </section>
+
+      <div id="taskBoard" class="task-board" aria-live="polite"></div>
+    </main>
+  </div>
 
   <script src="/api/supabase-public-config"></script>
   <script src="./js/config.local.js"></script>

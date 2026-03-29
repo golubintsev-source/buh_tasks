@@ -4,8 +4,9 @@
 
 ## 1. Supabase
 
-1. Выполните скрипт `supabase_tasks.sql` в **SQL Editor**.
-2. **Project Settings → API**: скопируйте **URL** и **anon public** key.
+1. Выполните скрипт `supabase_tasks.sql` в **SQL Editor** (при обновлении с старой версии таблицы `tasks` скрипт добавит новые поля и перенесёт данные из `title` / `done`, если они были).
+2. Таблица `tasks`: время создания, текст, клиент, телефон, email, тип задачи, дедлайн, признак закрытия.
+3. **Project Settings → API**: скопируйте **URL** и **anon public** key.
 
 ## 2. Ключи в проекте
 
