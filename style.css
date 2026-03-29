@@ -524,3 +524,97 @@ body {
   font-size: 0.78rem;
   background: var(--surface);
 }
+
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+}
+
+.app-nav__link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.app-nav__link:hover {
+  text-decoration: underline;
+}
+
+.app-nav__current {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.app-nav__sep {
+  color: var(--text-muted);
+}
+
+.panel--settings {
+  padding: 0.55rem 0.75rem 0.65rem;
+  margin-bottom: 0.45rem;
+}
+
+.settings-block__title {
+  margin: 0 0 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.settings-hint {
+  margin: -0.2rem 0 0.45rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.settings-add-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 0.35rem 0.5rem;
+  align-items: end;
+  margin-bottom: 0.45rem;
+}
+
+.settings-add-row--narrow {
+  grid-template-columns: 1fr auto;
+  max-width: 28rem;
+}
+
+@media (max-width: 900px) {
+  .settings-add-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .settings-add-row .field--add-btn {
+    grid-column: 1 / -1;
+  }
+}
+
+.field--add-btn .btn {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.field--full-row {
+  grid-column: 1 / -1;
+}
+
+.settings-add-row--narrow .field--full-row {
+  grid-column: 1;
+}
+
+.table-wrap--settings {
+  margin-top: 0.25rem;
+}
+
+.data-table.data-table--settings {
+  min-width: 0;
+  font-size: 0.8rem;
+}
+
+.data-table.data-table--settings th,
+.data-table.data-table--settings td {
+  padding: 0.3rem 0.4rem;
+}

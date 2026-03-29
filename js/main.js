@@ -9,6 +9,78 @@ const deadlineEl = document.getElementById("deadline");
 /** @type {string | null} */
 let editingTaskId = null;
 
+let clientsList = [];
+let clientsById = new Map();
+
+async function loadReferenceData() {
+  const [cr, tr] = await Promise.all([
+    supabase.from("clients").select("id,name,phone,email").order("name"),
+    supabase.from("task_types").select("id,name,sort_order").order("sort_order", { ascending: true }).order("name", { ascending: true }),
+  ]);
+  if (cr.error) {
+    setStatus(`Справочник клиентов: ${cr.error.message}`, true);
+    return;
+  }
+  clientsList = cr.data || [];
+  clientsById = new Map(clientsList.map((c) => [c.id, c]));
+  populateClientSelect();
+  if (tr.error) {
+    setStatus(`Типы задач: ${tr.error.message}`, true);
+    return;
+  }
+  populateTaskTypeSelect(tr.data || []);
+}
+
+function populateClientSelect() {
+  const sel = document.getElementById("clientSelect");
+  if (!sel) return;
+  const prev = sel.value;
+  sel.querySelectorAll("option[data-legacy]").forEach((o) => o.remove());
+  sel.innerHTML = "";
+  const empty = document.createElement("option");
+  empty.value = "";
+  empty.textContent = "— выберите клиента —";
+  sel.appendChild(empty);
+  for (const c of clientsList) {
+    const o = document.createElement("option");
+    o.value = c.id;
+    o.textContent = c.name;
+    sel.appendChild(o);
+  }
+  if (prev && [...sel.options].some((o) => o.value === prev)) {
+    sel.value = prev;
+  }
+}
+
+function populateTaskTypeSelect(types) {
+  const sel = document.getElementById("taskType");
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = "";
+  const empty = document.createElement("option");
+  empty.value = "";
+  empty.textContent = "—";
+  sel.appendChild(empty);
+  for (const t of types) {
+    const o = document.createElement("option");
+    o.value = t.name;
+    o.textContent = t.name;
+    sel.appendChild(o);
+  }
+  if (prev && [...sel.options].some((o) => o.value === prev)) {
+    sel.value = prev;
+  }
+}
+
+function getClientNameFromForm() {
+  const sel = document.getElementById("clientSelect");
+  const opt = sel?.selectedOptions[0];
+  if (!opt || !opt.value) return null;
+  if (opt.value === "__legacy__") return opt.textContent.trim() || null;
+  const c = clientsById.get(opt.value);
+  return c ? c.name.trim() : null;
+}
+
 function isConfigPlaceholder() {
   return (
     SUPABASE_URL.includes("YOUR_PROJECT_REF") ||
@@ -58,6 +130,7 @@ function toDatetimeLocalValue(iso) {
 
 function clearEditMode() {
   editingTaskId = null;
+  document.querySelector("#clientSelect option[data-legacy]")?.remove();
   const lbl = document.getElementById("taskTextLabel");
   if (lbl) lbl.textContent = "Текст задачи";
   const btn = document.getElementById("taskSubmitBtn");
@@ -72,9 +145,28 @@ function startEditTask(row) {
   const lbl = document.getElementById("taskTextLabel");
   if (lbl) lbl.textContent = `Текст задачи (№ ${formatTaskNumber(row.task_number)})`;
   taskTextEl.value = (row.task_text || row.title || "").trim();
-  document.getElementById("clientName").value = row.client_name || "";
-  document.getElementById("phone").value = row.phone || "";
-  document.getElementById("email").value = row.email || "";
+  document.querySelector("#clientSelect option[data-legacy]")?.remove();
+  const name = (row.client_name || "").trim();
+  const match = clientsList.find((c) => c.name === name);
+  const clientSel = document.getElementById("clientSelect");
+  if (match) {
+    clientSel.value = match.id;
+    document.getElementById("phone").value = match.phone || row.phone || "";
+    document.getElementById("email").value = match.email || row.email || "";
+  } else if (name) {
+    const o = document.createElement("option");
+    o.value = "__legacy__";
+    o.textContent = name;
+    o.dataset.legacy = "1";
+    clientSel.appendChild(o);
+    clientSel.value = "__legacy__";
+    document.getElementById("phone").value = row.phone || "";
+    document.getElementById("email").value = row.email || "";
+  } else {
+    clientSel.value = "";
+    document.getElementById("phone").value = row.phone || "";
+    document.getElementById("email").value = row.email || "";
+  }
   document.getElementById("taskType").value = row.task_type || "";
   deadlineEl.value = toDatetimeLocalValue(row.deadline);
   formEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -376,6 +468,17 @@ deadlineEl.addEventListener("change", () => {
   deadlineEl.closest(".field")?.classList.remove("field--invalid");
 });
 
+document.getElementById("clientSelect").addEventListener("change", () => {
+  const id = document.getElementById("clientSelect").value;
+  if (id && id !== "__legacy__") {
+    const c = clientsById.get(id);
+    if (c) {
+      document.getElementById("phone").value = c.phone || "";
+      document.getElementById("email").value = c.email || "";
+    }
+  }
+});
+
 formEl.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -391,7 +494,7 @@ formEl.addEventListener("submit", async (e) => {
 
   hideStatus();
 
-  const client_name = document.getElementById("clientName").value.trim() || null;
+  const client_name = getClientNameFromForm();
   const phone = document.getElementById("phone").value.trim() || null;
   const email = document.getElementById("email").value.trim() || null;
   const task_type = document.getElementById("taskType").value.trim() || null;
@@ -433,5 +536,8 @@ if (isConfigPlaceholder()) {
     true
   );
 } else {
-  loadTasks();
+  (async () => {
+    await loadReferenceData();
+    await loadTasks();
+  })();
 }

@@ -12,6 +12,12 @@
 <body>
   <div class="app">
     <main class="main">
+      <nav class="app-nav" aria-label="Разделы">
+        <span class="app-nav__current">Задачи</span>
+        <span class="app-nav__sep" aria-hidden="true">·</span>
+        <a class="app-nav__link" href="./settings.html">Настройки</a>
+      </nav>
+
       <div id="status" class="status" role="alert" hidden></div>
 
       <section class="panel panel--form" aria-label="Новая задача">
@@ -32,7 +38,9 @@
           <div class="form__row form__row--meta">
             <label class="field field--compact">
               <span class="field__label">Клиент</span>
-              <input type="text" id="clientName" name="client_name" placeholder="ФИО / компания" maxlength="500" />
+              <select id="clientSelect" name="client_id">
+                <option value="">— выберите клиента —</option>
+              </select>
             </label>
             <label class="field field--compact">
               <span class="field__label">Телефон</span>
@@ -46,11 +54,6 @@
               <span class="field__label">Тип</span>
               <select id="taskType" name="task_type">
                 <option value="">—</option>
-                <option value="Звонок">Звонок</option>
-                <option value="Встреча">Встреча</option>
-                <option value="Отчёт">Отчёт</option>
-                <option value="Документы">Документы</option>
-                <option value="Прочее">Прочее</option>
               </select>
             </label>
             <label class="field field--compact field--deadline">
