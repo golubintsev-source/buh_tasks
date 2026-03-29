@@ -1,5 +1,7 @@
 -- Выполните в Supabase → SQL Editor
 
+create sequence if not exists public.tasks_task_number_seq;
+
 create table if not exists public.tasks (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
@@ -20,6 +22,38 @@ alter table public.tasks add column if not exists task_type text;
 alter table public.tasks add column if not exists deadline timestamptz;
 alter table public.tasks add column if not exists closed boolean;
 alter table public.tasks add column if not exists title text;
+alter table public.tasks add column if not exists task_number integer;
+
+-- Порядковый номер задачи (автоинкремент; только для строк без номера)
+update public.tasks t
+set task_number = numbered.new_no
+from (
+  with mx as (select coalesce(max(task_number), 0) as m from public.tasks)
+  select
+    t.id,
+    mx.m + row_number() over (order by t.created_at asc, t.id asc) as new_no
+  from public.tasks t
+  cross join mx
+  where t.task_number is null
+) numbered
+where t.id = numbered.id;
+
+select setval(
+  'public.tasks_task_number_seq',
+  coalesce((select max(task_number) from public.tasks), 0)
+);
+
+alter table public.tasks
+  alter column task_number set default nextval('public.tasks_task_number_seq');
+
+alter table public.tasks alter column task_number set not null;
+
+do $$
+begin
+  alter table public.tasks add constraint tasks_task_number_key unique (task_number);
+exception
+  when duplicate_object then null;
+end $$;
 
 -- Старая схема: title NOT NULL без task_text в INSERT — снимаем жёсткое ограничение
 do $$

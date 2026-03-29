@@ -84,7 +84,9 @@ function groupTasks(tasks) {
     const ad = a.deadline ? new Date(a.deadline).getTime() : Number.MAX_SAFE_INTEGER;
     const bd = b.deadline ? new Date(b.deadline).getTime() : Number.MAX_SAFE_INTEGER;
     if (ad !== bd) return ad - bd;
-    return new Date(a.created_at) - new Date(b.created_at);
+    const c = new Date(a.created_at) - new Date(b.created_at);
+    if (c !== 0) return c;
+    return (a.task_number ?? 0) - (b.task_number ?? 0);
   };
 
   completed.sort(cmp);
@@ -122,6 +124,7 @@ function renderTableRows(tbody, rows) {
     const tr = document.createElement("tr");
     tr.dataset.id = row.id;
 
+    const tdNum = el("td", "cell-num", row.task_number != null ? String(row.task_number) : "—");
     const tdCreated = el("td", "cell-nowrap", fmtDateTime(row.created_at));
     const tdText = el("td", "cell-text");
     tdText.textContent = (row.task_text || row.title || "").trim() || "—";
@@ -151,6 +154,7 @@ function renderTableRows(tbody, rows) {
     );
 
     tr.append(
+      tdNum,
       tdCreated,
       tdText,
       tdClient,
@@ -186,6 +190,7 @@ function renderSection(title, variant, rows) {
       const thead = document.createElement("thead");
       const tr = document.createElement("tr");
       const headers = [
+        "№",
         "Создано",
         "Задача",
         "Клиент",

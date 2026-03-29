@@ -15,9 +15,9 @@
       <div id="status" class="status" role="alert" hidden></div>
 
       <section class="panel panel--form" aria-label="Новая задача">
-        <form id="taskForm" class="form" autocomplete="off">
-          <div class="form__grid">
-            <label class="field field--full">
+        <form id="taskForm" class="form form--compact" autocomplete="off">
+          <div class="form__row form__row--task">
+            <label class="field field--task-text">
               <span class="field__label">Текст задачи</span>
               <textarea
                 id="taskText"
@@ -28,22 +28,24 @@
                 maxlength="4000"
               ></textarea>
             </label>
-            <label class="field">
+          </div>
+          <div class="form__row form__row--meta">
+            <label class="field field--compact">
               <span class="field__label">Клиент</span>
-              <input type="text" id="clientName" name="client_name" placeholder="Название / ФИО" maxlength="500" />
+              <input type="text" id="clientName" name="client_name" placeholder="ФИО / компания" maxlength="500" />
             </label>
-            <label class="field">
+            <label class="field field--compact">
               <span class="field__label">Телефон</span>
               <input type="tel" id="phone" name="phone" placeholder="+7 …" maxlength="50" />
             </label>
-            <label class="field">
+            <label class="field field--compact">
               <span class="field__label">Email</span>
               <input type="email" id="email" name="email" placeholder="email@…" maxlength="320" />
             </label>
-            <label class="field">
-              <span class="field__label">Тип задачи</span>
+            <label class="field field--compact field--type">
+              <span class="field__label">Тип</span>
               <select id="taskType" name="task_type">
-                <option value="">Не выбран</option>
+                <option value="">—</option>
                 <option value="Звонок">Звонок</option>
                 <option value="Встреча">Встреча</option>
                 <option value="Отчёт">Отчёт</option>
@@ -51,13 +53,14 @@
                 <option value="Прочее">Прочее</option>
               </select>
             </label>
-            <label class="field">
+            <label class="field field--compact field--deadline">
               <span class="field__label">Дедлайн</span>
               <input type="datetime-local" id="deadline" name="deadline" />
             </label>
-          </div>
-          <div class="form__actions">
-            <button type="submit" class="btn btn--primary">Добавить задачу</button>
+            <div class="field field--submit">
+              <span class="field__label field__label--placeholder" aria-hidden="true">&nbsp;</span>
+              <button type="submit" class="btn btn--primary btn--save">Сохранить</button>
+            </div>
           </div>
         </form>
       </section>
