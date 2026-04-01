@@ -63,7 +63,7 @@ async function loadClients() {
     const phoneDisplay = row.phone
       ? formatPhoneInput(row.phone) || row.phone
       : "—";
-    for (const text of [row.name, phoneDisplay, row.email || "—"]) {
+    for (const text of [row.name, phoneDisplay]) {
       const td = document.createElement("td");
       td.textContent = text;
       tr.appendChild(td);
@@ -165,8 +165,7 @@ document.getElementById("clientAddForm").addEventListener("submit", async (e) =>
     return;
   }
   const phone = phoneForStorage(phoneRaw);
-  const email = document.getElementById("newClientEmail").value.trim() || null;
-  const { error } = await supabase.from("clients").insert({ name, phone, email });
+  const { error } = await supabase.from("clients").insert({ name, phone });
   if (error) {
     setStatus(`Ошибка: ${error.message}`, true);
     return;

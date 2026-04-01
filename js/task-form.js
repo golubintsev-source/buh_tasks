@@ -22,7 +22,7 @@ let clientsById = new Map();
 
 async function loadReferenceData() {
   const [cr, tr] = await Promise.all([
-    supabase.from("clients").select("id,name,phone,email").order("name"),
+    supabase.from("clients").select("id,name,phone").order("name"),
     supabase
       .from("task_types")
       .select("id,name,sort_order,color")
@@ -149,7 +149,6 @@ function fillFormForEdit(row) {
   if (match) {
     clientSel.value = match.id;
     setPhoneInputValue(phoneEl, match.phone || row.phone || "");
-    document.getElementById("email").value = match.email || row.email || "";
   } else if (name) {
     const o = document.createElement("option");
     o.value = "__legacy__";
@@ -158,11 +157,9 @@ function fillFormForEdit(row) {
     clientSel.appendChild(o);
     clientSel.value = "__legacy__";
     setPhoneInputValue(phoneEl, row.phone || "");
-    document.getElementById("email").value = row.email || "";
   } else {
     clientSel.value = "";
     setPhoneInputValue(phoneEl, row.phone || "");
-    document.getElementById("email").value = row.email || "";
   }
   document.getElementById("taskType").value = row.task_type || "";
   deadlineEl.value = toDatetimeLocalValue(row.deadline);
@@ -208,7 +205,6 @@ document.getElementById("clientSelect").addEventListener("change", () => {
     const c = clientsById.get(id);
     if (c) {
       setPhoneInputValue(phoneEl, c.phone || "");
-      document.getElementById("email").value = c.email || "";
     }
   }
 });
@@ -235,7 +231,6 @@ formEl.addEventListener("submit", async (e) => {
 
   const client_name = getClientNameFromForm();
   const phone = phoneForStorage(phoneEl?.value ?? "");
-  const email = document.getElementById("email").value.trim() || null;
   const task_type = document.getElementById("taskType").value.trim() || null;
   const deadline = new Date(deadlineRaw).toISOString();
 
@@ -244,7 +239,6 @@ formEl.addEventListener("submit", async (e) => {
     title: taskText,
     client_name,
     phone,
-    email,
     task_type,
     deadline,
   };

@@ -8,7 +8,6 @@ create table if not exists public.tasks (
   task_text text not null default '',
   client_name text,
   phone text,
-  email text,
   task_type text,
   deadline timestamptz,
   closed boolean not null default false
@@ -17,12 +16,13 @@ create table if not exists public.tasks (
 alter table public.tasks add column if not exists task_text text;
 alter table public.tasks add column if not exists client_name text;
 alter table public.tasks add column if not exists phone text;
-alter table public.tasks add column if not exists email text;
 alter table public.tasks add column if not exists task_type text;
 alter table public.tasks add column if not exists deadline timestamptz;
 alter table public.tasks add column if not exists closed boolean;
 alter table public.tasks add column if not exists title text;
 alter table public.tasks add column if not exists task_number integer;
+
+alter table public.tasks drop column if exists email;
 
 -- Если раньше создали триггер без колонки — убираем, иначе INSERT падает с «new has no field task_number»
 drop trigger if exists tasks_assign_task_number on public.tasks;

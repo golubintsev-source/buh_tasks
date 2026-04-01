@@ -153,7 +153,6 @@ function buildColGroup() {
     "data-table__col--task",
     "data-table__col--client",
     "data-table__col--phone",
-    "data-table__col--email",
     "data-table__col--type",
     "data-table__col--deadline",
     "data-table__col--closed",
@@ -226,7 +225,6 @@ function renderTableRows(tbody, rows) {
     const tdClient = el("td", "cell-nowrap cell-client", row.client_name || "—");
     const phoneDisplay = row.phone ? formatPhoneInput(row.phone) || row.phone : "—";
     const tdPhone = el("td", "cell-nowrap cell-phone", phoneDisplay);
-    const tdEmail = el("td", "cell-nowrap cell-email", row.email || "—");
     const tdType = el("td", "cell-nowrap cell-type", row.task_type || "—");
     const tdDeadline = el("td", "cell-nowrap cell-deadline", fmtDateTime(row.deadline));
 
@@ -248,7 +246,7 @@ function renderTableRows(tbody, rows) {
       })
     );
 
-    tr.append(tdNum, tdText, tdClient, tdPhone, tdEmail, tdType, tdDeadline, tdClosed, tdDelete);
+    tr.append(tdNum, tdText, tdClient, tdPhone, tdType, tdDeadline, tdClosed, tdDelete);
     tbody.appendChild(tr);
   }
 }
@@ -305,7 +303,6 @@ function renderSection(title, variant, rows) {
           "Задача",
           "Клиент",
           "Телефон",
-          "Email",
           "Тип",
           "Дедлайн",
           "Выполнена",

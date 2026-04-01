@@ -402,7 +402,7 @@ body {
 }
 
 .data-table__col--task {
-  width: 31%;
+  width: 45%;
 }
 
 .data-table__col--client {
@@ -411,10 +411,6 @@ body {
 
 .data-table__col--phone {
   width: 10%;
-}
-
-.data-table__col--email {
-  width: 14%;
 }
 
 .data-table__col--type {
