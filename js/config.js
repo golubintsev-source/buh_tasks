@@ -1,0 +1,134 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+/**
+ * Подставьте URL и anon key из Supabase → Project Settings → API
+ * (либо задайте window.__SUPABASE_URL__ и window.__SUPABASE_ANON_KEY__ в index.html до загрузки модулей).
+ */
+export const SUPABASE_URL =
+  typeof window !== "undefined" && window.__SUPABASE_URL__
+    ? window.__SUPABASE_URL__
+    : "https://YOUR_PROJECT_REF.supabase.co";
+
+export const SUPABASE_KEY =
+  typeof window !== "undefined" && window.__SUPABASE_ANON_KEY__
+    ? window.__SUPABASE_ANON_KEY__
+    : "YOUR_SUPABASE_ANON_KEY";
+
+function shouldUseDbProxy() {
+  if (typeof window.__SUPABASE_USE_PROXY__ === "boolean") {
+    return window.__SUPABASE_USE_PROXY__;
+  }
+  return true;
+}
+
+function headersToObject(headers) {
+  const o = {};
+  if (!headers) return o;
+  const h = headers instanceof Headers ? headers : new Headers(headers);
+  h.forEach((v, k) => {
+    o[k] = v;
+  });
+  return o;
+}
+
+function isBinaryUploadContentType(ct) {
+  if (!ct) return false;
+  const c = ct.toLowerCase();
+  if (c.includes("json") || c.includes("text/plain") || c.includes("graphql")) return false;
+  if (c.startsWith("image/") || c.startsWith("video/") || c.startsWith("audio/")) return true;
+  if (c.includes("octet-stream")) return true;
+  if (c.startsWith("multipart/")) return true;
+  return false;
+}
+
+function createSupabaseProxyFetch(supabaseUrl) {
+  const origin = new URL(supabaseUrl).origin;
+
+  return async function supabaseProxyFetch(input, init) {
+    if (!shouldUseDbProxy()) {
+      return fetch(input, init);
+    }
+
+    const req = new Request(input, init);
+    const u = new URL(req.url);
+
+    if (u.origin !== origin) {
+      return fetch(input, init);
+    }
+    if (
+      !u.pathname.startsWith("/rest/v1/") &&
+      !u.pathname.startsWith("/storage/v1/") &&
+      !u.pathname.startsWith("/auth/v1/")
+    ) {
+      return fetch(input, init);
+    }
+
+    const pathWithQuery = u.pathname + u.search;
+    const method = req.method.toUpperCase();
+    const h = req.headers;
+
+    const proxyUrl = `${window.location.origin}/api/supabase-proxy`;
+
+    if (method === "GET" || method === "HEAD") {
+      return fetch(proxyUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: pathWithQuery,
+          method,
+          headers: headersToObject(h),
+        }),
+      });
+    }
+
+    if (req.body === null) {
+      return fetch(proxyUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: pathWithQuery,
+          method,
+          headers: headersToObject(h),
+        }),
+      });
+    }
+
+    const ct = h.get("Content-Type") || "";
+
+    if (isBinaryUploadContentType(ct)) {
+      const proxyHeaders = new Headers();
+      proxyHeaders.set("X-Proxy-Path", pathWithQuery);
+      proxyHeaders.set("X-Proxy-Method", method);
+      h.forEach((value, key) => {
+        const lower = key.toLowerCase();
+        if (lower === "host" || lower === "content-length") return;
+        if (lower.startsWith("x-proxy-")) return;
+        proxyHeaders.set(key, value);
+      });
+      return fetch(proxyUrl, {
+        method: "POST",
+        headers: proxyHeaders,
+        body: req.body,
+        duplex: "half",
+      });
+    }
+
+    const text = await req.text();
+    return fetch(proxyUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        path: pathWithQuery,
+        method,
+        headers: headersToObject(h),
+        body: text || undefined,
+      }),
+    });
+  };
+}
+
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  global: {
+    fetch: createSupabaseProxyFetch(SUPABASE_URL),
+  },
+});

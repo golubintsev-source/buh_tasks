@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Настройки — Бух задачи</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="app">
+    <main class="main">
+      <nav class="app-nav" aria-label="Разделы">
+        <a class="app-nav__link" href="./index.html">Задачи6</a>
+        <span class="app-nav__sep" aria-hidden="true">·</span>
+        <a class="app-nav__link" href="./task.html">Новая задача</a>
+        <span class="app-nav__sep" aria-hidden="true">·</span>
+        <span class="app-nav__current">Настройки</span>
+      </nav>
+
+      <div id="status" class="status" role="alert" hidden></div>
+
+      <section class="panel panel--settings" aria-labelledby="clients-heading">
+        <h2 id="clients-heading" class="settings-block__title">База клиентов</h2>
+        <form id="clientAddForm" class="settings-add-row" autocomplete="off">
+          <label class="field field--compact">
+            <span class="field__label">Клиент</span>
+            <input type="text" id="newClientName" name="name" maxlength="500" required />
+          </label>
+          <label class="field field--compact">
+            <span class="field__label">Телефон</span>
+            <input type="tel" id="newClientPhone" name="phone" placeholder="+7-901-123-12-12" maxlength="16" />
+          </label>
+          <div class="field field--add-btn">
+            <span class="field__label field__label--placeholder" aria-hidden="true">&nbsp;</span>
+            <button type="submit" class="btn btn--primary">Добавить</button>
+          </div>
+        </form>
+        <div class="table-wrap table-wrap--settings">
+          <table class="data-table data-table--settings" id="clientsTable">
+            <thead>
+              <tr>
+                <th>Клиент</th>
+                <th>Телефон</th>
+                <th class="cell-actions-head" aria-label="Удалить"></th>
+              </tr>
+            </thead>
+            <tbody id="clientsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel panel--settings" aria-labelledby="types-heading">
+        <h2 id="types-heading" class="settings-block__title">Типы задач</h2>
+        <form id="taskTypeAddForm" class="settings-add-row settings-add-row--narrow" autocomplete="off">
+          <label class="field field--compact">
+            <span class="field__label">Название типа</span>
+            <input type="text" id="newTaskTypeName" name="name" maxlength="200" required />
+          </label>
+          <div class="field field--add-btn">
+            <span class="field__label field__label--placeholder" aria-hidden="true">&nbsp;</span>
+            <button type="submit" class="btn btn--primary">Добавить</button>
+          </div>
+        </form>
+        <div class="table-wrap table-wrap--settings">
+          <table class="data-table data-table--settings" id="taskTypesTable">
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th>Цвет новой</th>
+                <th>Цвет готовой</th>
+                <th class="cell-actions-head" aria-label="Удалить"></th>
+              </tr>
+            </thead>
+            <tbody id="taskTypesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/api/supabase-public-config"></script>
+  <script src="./js/config.local.js"></script>
+  <script type="module" src="./js/settings.js"></script>
+</body>
+</html>
