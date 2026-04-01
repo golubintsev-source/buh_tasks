@@ -444,7 +444,7 @@ body {
 }
 
 .data-table__col--task {
-  width: 45%;
+  width: 46%;
 }
 
 .data-table__col--client {
@@ -462,11 +462,11 @@ body {
 }
 
 .data-table__col--type {
-  width: 7%;
+  width: 8.4%;
 }
 
 .data-table__col--deadline {
-  width: 12%;
+  width: 9.6%;
 }
 
 .data-table__col--closed {
