@@ -94,8 +94,18 @@ function addCalendarDays(date, days) {
   return d;
 }
 
+/** 5:00 местного времени на календарный день после дня дедлайна (не зависит от времени в дедлайне). */
+function graceEndAfterDeadlineDay(deadlineIso) {
+  const dayStart = startOfLocalDay(new Date(deadlineIso));
+  const t = new Date(dayStart);
+  t.setDate(t.getDate() + 1);
+  t.setHours(5, 0, 0, 0);
+  return t.getTime();
+}
+
 function groupTasks(tasks) {
   const now = new Date();
+  const nowMs = now.getTime();
   const todayStart = startOfLocalDay(now);
   const tomorrowStart = startOfLocalDay(addCalendarDays(now, 1));
 
@@ -106,21 +116,35 @@ function groupTasks(tasks) {
   const future = [];
 
   for (const t of tasks) {
-    if (t.closed) {
-      completed.push(t);
-      continue;
-    }
     if (!t.deadline) {
-      future.push(t);
+      if (t.closed) {
+        completed.push(t);
+      } else {
+        future.push(t);
+      }
       continue;
     }
+
+    const graceEndMs = graceEndAfterDeadlineDay(t.deadline);
     const ds = startOfLocalDay(new Date(t.deadline));
-    if (ds < todayStart) {
-      overdue.push(t);
-    } else if (ds === todayStart) {
+
+    if (nowMs >= graceEndMs) {
+      if (t.closed) {
+        completed.push(t);
+      } else {
+        overdue.push(t);
+      }
+      continue;
+    }
+
+    // До 5:00 следующего дня после дедлайна: не «выполнено» и не «просрочено» по новому правилу.
+    if (ds === todayStart) {
       today.push(t);
     } else if (ds === tomorrowStart) {
       tomorrow.push(t);
+    } else if (ds < todayStart) {
+      // Дедлайн был вчера или раньше, но ещё не наступило 5:00 «завтра» после дня дедлайна — показываем в «Сегодня» (окно до отсечки).
+      today.push(t);
     } else {
       future.push(t);
     }
@@ -245,7 +269,8 @@ function renderTableRows(tbody, rows) {
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.checked = Boolean(row.closed);
-    cb.title = "Готово";
+    cb.title =
+      "Готово — в разделе «Выполненные» после 5:00 следующего дня после дедлайна; без отметки после этой отсечки — в «Просроченные».";
     cb.addEventListener("change", () => toggleClosed(row.id, cb.checked));
     tdClosed.appendChild(cb);
 
