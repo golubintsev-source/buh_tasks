@@ -30,7 +30,7 @@
 
 3. Сделайте **Redeploy** после добавления или изменения переменных (или новый push в `main`).
 
-4. Откройте адрес `*.vercel.app`: запросы к базе идут через `/api/supabase-proxy`.
+4. Откройте адрес `*.vercel.app`: из браузера к хосту Supabase запросов нет — PostgREST, Storage и Auth идут через **`/api/supabase-proxy`** на том же домене (Vercel).
 
 ### Если ключ когда-либо попал в git
 
@@ -38,6 +38,8 @@
 
 ## 4. Локальный просмотр
 
-Откройте `index.html` в браузере. На `localhost` клиент ходит в Supabase **напрямую** (прокси отключён в `js/config.js`), поэтому должен быть заполнен **`js/config.local.js`** (или заданы `window` до загрузки скриптов).
+Чтобы и локально запросы шли через прокси (как на проде), поднимите проект командой **`vercel dev`** из корня репозитория (нужен [Vercel CLI](https://vercel.com/docs/cli)). В `.env.local` задайте те же `SUPABASE_URL` и `SUPABASE_ANON_KEY`, что и в Vercel — тогда сработают `/api/supabase-public-config` и `/api/supabase-proxy`. При необходимости дублируйте ключи в **`js/config.local.js`** по примеру `config.local.example.js`.
+
+Обычный статический сервер без Vercel (например, только открытие `index.html` или `python -m http.server`) **не** поднимает `/api/*`, поэтому приложение к базе не подключится. Явный обход прокси: только `window.__SUPABASE_USE_PROXY__ = false` в `config.local.js` (не рекомендуется).
 
 Пока файла `js/config.local.js` нет, в консоли браузера может быть **404** на этот скрипт — это нормально; после копирования из `config.local.example.js` и заполнения ключей предупреждение пропадёт.

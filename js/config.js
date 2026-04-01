@@ -18,8 +18,6 @@ function shouldUseDbProxy() {
   if (typeof window.__SUPABASE_USE_PROXY__ === "boolean") {
     return window.__SUPABASE_USE_PROXY__;
   }
-  const h = window.location.hostname;
-  if (h === "localhost" || h === "127.0.0.1") return false;
   return true;
 }
 
@@ -57,10 +55,11 @@ function createSupabaseProxyFetch(supabaseUrl) {
     if (u.origin !== origin) {
       return fetch(input, init);
     }
-    if (u.pathname.startsWith("/auth/v1/")) {
-      return fetch(input, init);
-    }
-    if (!u.pathname.startsWith("/rest/v1/") && !u.pathname.startsWith("/storage/v1/")) {
+    if (
+      !u.pathname.startsWith("/rest/v1/") &&
+      !u.pathname.startsWith("/storage/v1/") &&
+      !u.pathname.startsWith("/auth/v1/")
+    ) {
       return fetch(input, init);
     }
 
