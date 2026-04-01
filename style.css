@@ -92,7 +92,7 @@ body {
     minmax(120px, 1.35fr)
     minmax(0, calc(9.75rem * 1.3))
     minmax(calc(96px * 1.3), 1.3fr)
-    minmax(340px, 2.75fr)
+    minmax(170px, 1.375fr)
     auto;
   gap: 0.35rem 0.55rem;
   align-items: stretch;
@@ -115,7 +115,7 @@ body {
 }
 
 .form__row--meta .field--deadline input[type="datetime-local"] {
-  min-width: min(100%, 19.5rem);
+  min-width: min(100%, 9.75rem);
 }
 
 .form__row--meta .field--submit .btn {
