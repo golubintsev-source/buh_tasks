@@ -51,6 +51,9 @@ const DEFAULT_TYPE_COLOR = "#e2e8f0";
 /** Цвет для новых типов при добавлении (без выбора в форме) */
 const DEFAULT_NEW_TASK_TYPE_COLOR = "#dbeafe";
 
+/** Светло-серый по умолчанию для готовой задачи */
+const DEFAULT_DONE_TASK_TYPE_COLOR = "#e5e7eb";
+
 async function loadClients() {
   const { data, error } = await supabase.from("clients").select("*").order("name");
   if (error) {
@@ -104,10 +107,23 @@ async function loadTaskTypes() {
     const picker = document.createElement("input");
     picker.type = "color";
     picker.className = "input-color";
-    picker.title = "Цвет фона строк с этим типом задач";
+    picker.title = "Цвет фона строки, пока задача не отмечена готовой";
     picker.value = normalizeHexColor(row.color) || DEFAULT_TYPE_COLOR;
     picker.addEventListener("change", () => saveTaskTypeColor(row.id, picker.value));
     tdColor.appendChild(picker);
+
+    const tdColorDone = document.createElement("td");
+    tdColorDone.className = "cell-color-picker";
+    const pickerDone = document.createElement("input");
+    pickerDone.type = "color";
+    pickerDone.className = "input-color";
+    pickerDone.title = "Цвет фона строки для готовой задачи";
+    pickerDone.value =
+      normalizeHexColor(row.color_done) || DEFAULT_DONE_TASK_TYPE_COLOR;
+    pickerDone.addEventListener("change", () =>
+      saveTaskTypeColorDone(row.id, pickerDone.value)
+    );
+    tdColorDone.appendChild(pickerDone);
 
     const tdAct = document.createElement("td");
     tdAct.className = "cell-actions";
@@ -118,7 +134,7 @@ async function loadTaskTypes() {
     btn.innerHTML = TRASH_SVG;
     btn.addEventListener("click", () => deleteTaskType(row.id));
     tdAct.appendChild(btn);
-    tr.append(tdName, tdColor, tdAct);
+    tr.append(tdName, tdColor, tdColorDone, tdAct);
     typesBody.appendChild(tr);
   }
   hideStatus();
@@ -128,7 +144,17 @@ async function saveTaskTypeColor(id, hex) {
   const color = normalizeHexColor(hex);
   const { error } = await supabase.from("task_types").update({ color }).eq("id", id);
   if (error) {
-    setStatus(`Цвет: ${error.message}`, true);
+    setStatus(`Цвет новой: ${error.message}`, true);
+    return;
+  }
+  hideStatus();
+}
+
+async function saveTaskTypeColorDone(id, hex) {
+  const color_done = normalizeHexColor(hex);
+  const { error } = await supabase.from("task_types").update({ color_done }).eq("id", id);
+  if (error) {
+    setStatus(`Цвет готовой: ${error.message}`, true);
     return;
   }
   hideStatus();
@@ -179,9 +205,13 @@ document.getElementById("taskTypeAddForm").addEventListener("submit", async (e) 
   const name = document.getElementById("newTaskTypeName").value.trim();
   if (!name) return;
   const color = normalizeHexColor(DEFAULT_NEW_TASK_TYPE_COLOR);
-  const { error } = await supabase
-    .from("task_types")
-    .insert({ name, sort_order: 99, color });
+  const color_done = normalizeHexColor(DEFAULT_DONE_TASK_TYPE_COLOR);
+  const { error } = await supabase.from("task_types").insert({
+    name,
+    sort_order: 99,
+    color,
+    color_done: color_done || DEFAULT_DONE_TASK_TYPE_COLOR,
+  });
   if (error) {
     setStatus(`Ошибка: ${error.message}`, true);
     return;

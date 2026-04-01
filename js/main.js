@@ -5,7 +5,10 @@ import { formatTaskNumber } from "./task-utils.js";
 const boardEl = document.getElementById("taskBoard");
 const statusEl = document.getElementById("status");
 
-/** Имя типа задачи (trim) → #rrggbb для фона строки */
+/** Светло-серый по умолчанию для готовой задачи (если в БД не задано) */
+const DEFAULT_DONE_TASK_TYPE_COLOR = "#e5e7eb";
+
+/** Имя типа задачи (trim) → { newBg, doneBg } для фона строки */
 let taskTypeColors = new Map();
 
 /** @param {string | null | undefined} raw */
@@ -26,15 +29,19 @@ function normalizeHexColor(raw) {
 function rebuildTaskTypeColors(types) {
   taskTypeColors = new Map();
   for (const t of types) {
-    const hex = normalizeHexColor(t.color);
-    if (hex) taskTypeColors.set(String(t.name).trim(), hex);
+    const name = String(t.name).trim();
+    if (!name) continue;
+    const newBg = normalizeHexColor(t.color);
+    const doneBg =
+      normalizeHexColor(t.color_done) || DEFAULT_DONE_TASK_TYPE_COLOR;
+    taskTypeColors.set(name, { newBg, doneBg });
   }
 }
 
 async function loadReferenceData() {
   const tr = await supabase
     .from("task_types")
-    .select("id,name,sort_order,color")
+    .select("id,name,sort_order,color,color_done")
     .order("sort_order", { ascending: true })
     .order("name", { ascending: true });
   if (tr.error) {
@@ -177,10 +184,15 @@ function trashButton(onClick) {
   return btn;
 }
 
-function rowBackgroundForTaskType(taskTypeRaw) {
+function rowBackgroundForTaskType(taskTypeRaw, closed) {
   const name = (taskTypeRaw || "").trim();
   if (!name) return null;
-  return taskTypeColors.get(name) || null;
+  const entry = taskTypeColors.get(name);
+  if (!entry) return null;
+  if (closed) {
+    return entry.doneBg || DEFAULT_DONE_TASK_TYPE_COLOR;
+  }
+  return entry.newBg || null;
 }
 
 function openTaskEdit(row) {
@@ -192,7 +204,7 @@ function renderTableRows(tbody, rows) {
   for (const row of rows) {
     const tr = document.createElement("tr");
     tr.dataset.id = row.id;
-    const rowBg = rowBackgroundForTaskType(row.task_type);
+    const rowBg = rowBackgroundForTaskType(row.task_type, Boolean(row.closed));
     if (rowBg) {
       tr.classList.add("task-row--typed");
       tr.style.setProperty("--row-type-bg", rowBg);

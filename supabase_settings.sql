@@ -14,11 +14,17 @@ create table if not exists public.task_types (
   name text not null,
   sort_order integer not null default 0,
   color text,
+  color_done text,
   created_at timestamptz not null default now(),
   constraint task_types_name_unique unique (name)
 );
 
 alter table public.task_types add column if not exists color text;
+alter table public.task_types add column if not exists color_done text;
+
+update public.task_types
+set color_done = '#e5e7eb'
+where color_done is null or trim(color_done) = '';
 
 insert into public.task_types (name, sort_order)
 select v.name, v.ord
