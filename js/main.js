@@ -233,7 +233,7 @@ function renderTableRows(tbody, rows) {
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.checked = Boolean(row.closed);
-    cb.title = "Выполнена";
+    cb.title = "Готово";
     cb.addEventListener("change", () => toggleClosed(row.id, cb.checked));
     tdClosed.appendChild(cb);
 
@@ -305,7 +305,7 @@ function renderSection(title, variant, rows) {
           "Телефон",
           "Тип",
           "Дедлайн",
-          "Выполнена",
+          "Готово",
           "",
         ];
         headers.forEach((h, i) => {
