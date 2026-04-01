@@ -413,6 +413,12 @@ body {
   width: 10%;
 }
 
+.cell-phone__link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
 .data-table__col--type {
   width: 7%;
 }

@@ -40,6 +40,13 @@ export function setPhoneInputValue(input, raw) {
   input.value = raw == null || String(raw).trim() === "" ? "" : formatPhoneInput(String(raw));
 }
 
+/** Для `href="tel:..."` на полном номере РФ (11 цифр); иначе null — ссылку не ставим. */
+export function telHrefFromRaw(raw) {
+  const d = extractDigits(raw);
+  if (!d || d.length !== 11) return null;
+  return `tel:+${d}`;
+}
+
 /** null если пусто или номер неполный; иначе строка +7-XXX-XXX-XX-XX */
 export function phoneForStorage(formatted) {
   const d = extractDigits(formatted);

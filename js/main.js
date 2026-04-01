@@ -1,5 +1,5 @@
 import { supabase, SUPABASE_URL, SUPABASE_KEY } from "./config.js";
-import { formatPhoneInput } from "./phoneMask.js";
+import { formatPhoneInput, telHrefFromRaw } from "./phoneMask.js";
 import { formatTaskNumber } from "./task-utils.js";
 
 const boardEl = document.getElementById("taskBoard");
@@ -259,8 +259,24 @@ function renderTableRows(tbody, rows) {
     tdText.textContent = (row.task_text || row.title || "").trim() || "—";
 
     const tdClient = el("td", "cell-nowrap cell-client", row.client_name || "—");
-    const phoneDisplay = row.phone ? formatPhoneInput(row.phone) || row.phone : "—";
-    const tdPhone = el("td", "cell-nowrap cell-phone", phoneDisplay);
+    const tdPhone = document.createElement("td");
+    tdPhone.className = "cell-nowrap cell-phone";
+    if (row.phone) {
+      const phoneDisplay = formatPhoneInput(row.phone) || row.phone;
+      const telHref = telHrefFromRaw(row.phone);
+      if (telHref) {
+        const a = document.createElement("a");
+        a.href = telHref;
+        a.className = "cell-phone__link";
+        a.textContent = phoneDisplay;
+        a.setAttribute("aria-label", `Позвонить: ${phoneDisplay}`);
+        tdPhone.appendChild(a);
+      } else {
+        tdPhone.textContent = phoneDisplay;
+      }
+    } else {
+      tdPhone.textContent = "—";
+    }
     const tdType = el("td", "cell-nowrap cell-type", row.task_type || "—");
     const tdDeadline = el("td", "cell-nowrap cell-deadline", fmtDateTime(row.deadline));
 
