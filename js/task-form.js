@@ -192,11 +192,23 @@ function validateTaskForm() {
 taskTextEl.addEventListener("input", () => {
   taskTextEl.closest(".field")?.classList.remove("field--invalid");
 });
+/** Для новой задачи: если после выбора даты время 00:00, подставить 18:00. */
+function applyDefaultDeadlineTime18() {
+  if (editingTaskId) return;
+  const v = deadlineEl.value;
+  if (!v) return;
+  const m = v.match(/^(\d{4}-\d{2}-\d{2})T00:00$/);
+  if (m) {
+    deadlineEl.value = `${m[1]}T18:00`;
+  }
+}
+
 deadlineEl.addEventListener("input", () => {
   deadlineEl.closest(".field")?.classList.remove("field--invalid");
 });
 deadlineEl.addEventListener("change", () => {
   deadlineEl.closest(".field")?.classList.remove("field--invalid");
+  applyDefaultDeadlineTime18();
 });
 
 document.getElementById("clientSelect").addEventListener("change", () => {
