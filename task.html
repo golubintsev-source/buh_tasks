@@ -38,12 +38,29 @@
             </label>
           </div>
           <div class="form__row form__row--meta">
-            <label class="field field--compact">
-              <span class="field__label">Клиент</span>
-              <select id="clientSelect" name="client_id">
-                <option value="">— выберите клиента —</option>
-              </select>
-            </label>
+            <div class="field field--compact field--client">
+              <span class="field__label" id="clientFieldLabel">Клиенты</span>
+              <div class="client-multi" id="clientMulti">
+                <button
+                  type="button"
+                  class="client-multi__trigger"
+                  id="clientSelectTrigger"
+                  aria-labelledby="clientFieldLabel"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="clientSelectDropdown"
+                >
+                  <span class="client-multi__value" id="clientSelectLabel">— выберите клиента —</span>
+                </button>
+                <div
+                  class="client-multi__dropdown"
+                  id="clientSelectDropdown"
+                  role="listbox"
+                  aria-multiselectable="true"
+                  hidden
+                ></div>
+              </div>
+            </div>
             <label class="field field--compact field--phone">
               <span class="field__label">Телефон</span>
               <input type="tel" id="phone" name="phone" placeholder="+7-901-123-12-12" maxlength="16" />

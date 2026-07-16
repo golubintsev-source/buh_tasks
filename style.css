@@ -100,13 +100,132 @@ body {
 
 /* Одна высота полей в строке мета (клиент, телефон, тип, дедлайн, кнопка) */
 .form__row--meta .field input,
-.form__row--meta .field select {
+.form__row--meta .field select,
+.form__row--meta .client-multi__trigger {
   height: 2.75rem;
   min-height: 2.75rem;
   padding-top: 0;
   padding-bottom: 0;
   line-height: 1.35;
   box-sizing: border-box;
+}
+
+.field--client {
+  position: relative;
+  z-index: 2;
+}
+
+.client-multi {
+  position: relative;
+  min-width: 0;
+}
+
+.client-multi__trigger {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #fafbfc;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.client-multi__trigger:hover {
+  border-color: #cbd5e1;
+}
+
+.client-multi__trigger:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.client-multi__trigger[aria-expanded="true"] {
+  border-color: var(--accent);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.client-multi__value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.client-multi__value--placeholder {
+  color: #94a3b8;
+}
+
+.client-multi__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 14rem;
+  overflow-y: auto;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.client-multi__option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.4rem 0.45rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.client-multi__option:hover {
+  background: var(--accent-soft);
+}
+
+.client-multi__option input {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+.client-multi__option--empty {
+  color: var(--text-muted);
+}
+
+.client-multi__option--empty input {
+  display: none;
+}
+
+.field--invalid .client-multi__trigger {
+  border-color: #e11d48;
+  background: #ffe4e6;
+  box-shadow: none;
+}
+
+.field--invalid .client-multi__trigger:focus,
+.field--invalid .client-multi__trigger[aria-expanded="true"] {
+  border-color: #be123c;
+  background: #fecdd3;
+  box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.2);
 }
 
 .form__row--meta .field--phone input {
