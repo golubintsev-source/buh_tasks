@@ -74,6 +74,8 @@ body {
 
 .panel--form {
   padding: 0.45rem 0.65rem 0.5rem;
+  /* иначе выпадающий список клиентов обрезается */
+  overflow: visible;
 }
 
 .form--compact {
@@ -112,7 +114,11 @@ body {
 
 .field--client {
   position: relative;
-  z-index: 2;
+  z-index: 5;
+}
+
+.field--client:has(.client-multi__trigger[aria-expanded="true"]) {
+  z-index: 30;
 }
 
 .client-multi {
