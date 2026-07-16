@@ -203,14 +203,22 @@ body {
   background: var(--accent-soft);
 }
 
-.client-multi__option input {
-  width: auto;
-  height: auto;
-  min-height: 0;
+.form__row--meta .client-multi__option input[type="checkbox"],
+.form__row--meta .client-multi__option input[type="radio"],
+.client-multi__option input[type="checkbox"],
+.client-multi__option input[type="radio"] {
+  width: 1rem;
+  height: 1rem;
+  min-height: 1rem;
+  max-width: 1rem;
   margin: 0;
   padding: 0;
   flex-shrink: 0;
   accent-color: var(--accent);
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .client-multi__option--empty {
